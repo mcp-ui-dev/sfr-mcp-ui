@@ -228,7 +228,7 @@ async function getToolsList(mcpEndpoint: string): Promise<Tool[]> {
           : error,
       errorDuration,
     });
-    throw error;
+    return [];
   }
 }
 
