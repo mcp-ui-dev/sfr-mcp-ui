@@ -1,5 +1,5 @@
-import { createHtmlResource } from "@mcp-ui/server";
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { createUIResource } from "@mcp-ui/server";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 export function addUIResourcesIfNeeded(
   storeDomain: string,
@@ -17,7 +17,7 @@ export function addUIResourcesIfNeeded(
       const newHtmlResourcesItems = products.map(
         (product: { url: string; product_id: string }) => {
           const productName = product.url.split("/").pop();
-          return createHtmlResource({
+          return createUIResource({
             uri: `ui://product/${product.product_id}`,
             content: {
               type: "externalUrl",
@@ -35,7 +35,7 @@ export function addUIResourcesIfNeeded(
       const productName = product.url.split("/").pop();
 
       content.push(
-        createHtmlResource({
+        createUIResource({
           uri: `ui://product/${product.product_id}`,
           content: {
             type: "externalUrl",
@@ -51,7 +51,7 @@ export function addUIResourcesIfNeeded(
       const cartId = JSON.parse(text).cart.id;
 
       content.push(
-        createHtmlResource({
+        createUIResource({
           uri: `ui://cart/${cartId}`,
           content: {
             type: "externalUrl",
