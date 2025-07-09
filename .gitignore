@@ -1,3 +1,10 @@
+node_modules
+build
+
+.nx
+.idea
+.vscode
+.zed
 # Logs
 
 logs
@@ -170,3 +177,9 @@ dist
 
 .dev.vars
 .wrangler/
+
+# playwright
+
+playwright-results/
+playwright-report/
+test-results/
