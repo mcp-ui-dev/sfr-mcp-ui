@@ -4,7 +4,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 export function addUIResourcesIfNeeded(
   storeDomain: string,
   toolName: string,
-  result: CallToolResult
+  result: CallToolResult,
 ) {
   const content = result.content;
   if (content?.[0]?.type !== "text") {
@@ -25,7 +25,7 @@ export function addUIResourcesIfNeeded(
             },
             delivery: "text",
           });
-        }
+        },
       );
       content.push(...newHtmlResourcesItems);
       break;
@@ -42,11 +42,12 @@ export function addUIResourcesIfNeeded(
             iframeUrl: `https://cdn.shopify.com/storefront/product-details.component?store_domain=${storeDomain}&product_handle=${productName}`,
           },
           delivery: "text",
-        })
+        }),
       );
 
       break;
 
+    case "get_cart":
     case "update_cart":
       const cartId = JSON.parse(text).cart.id;
 
@@ -61,11 +62,11 @@ export function addUIResourcesIfNeeded(
                   shop: storeDomain,
                   cartId: cartId,
                 },
-              ])
+              ]),
             )}`,
           },
           delivery: "text",
-        })
+        }),
       );
 
       break;

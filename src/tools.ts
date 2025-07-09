@@ -1,8 +1,8 @@
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { logger } from "./utils/logger";
 import { addUIResourcesIfNeeded } from "./ui";
 import { JsonSchemaToZodRawSchema } from "./utils/schema";
-import { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 export async function getToolsToRegister(requestUrlStr: string) {
   const requestUrl = new URL(requestUrlStr);
@@ -52,7 +52,7 @@ export async function getToolsToRegister(requestUrlStr: string) {
       });
 
       const callback: ToolCallback<typeof schema> = async (
-        args: typeof schema
+        args: typeof schema,
       ) => {
         const toolCallStartTime = Date.now();
 
