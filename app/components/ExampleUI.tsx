@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import UIResourceFrame from "./UIResourceFrame";
 
 export function ExampleUI({
@@ -21,11 +21,24 @@ export function ExampleUI({
       </div>
     );
   }
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const gridIframeStyle = isMobile ? { height: "300px" } : { height: "400px" };
   return (
-    <div className="text-sm text-gray-600 grid grid-cols-3 gap-4 pb-2">
+    <div className="text-sm text-gray-600 grid grid-cols-1 md:grid-cols-3 gap-4 pb-2">
       {exampleUIs.map((ui) => (
-        <UIResourceFrame iframeSrc={ui} />
+        <UIResourceFrame iframeSrc={ui} style={gridIframeStyle} />
       ))}
     </div>
   );
+}
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+  }, [matches, query]);
+  return matches;
 }
