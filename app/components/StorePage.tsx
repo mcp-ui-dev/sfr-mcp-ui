@@ -192,9 +192,14 @@ export function StorePage({
                   Tools with UI Support
                 </h3>
               </div>
-              <p className="text-gray-600 mb-4 text-sm">
+              <p className="text-gray-600 mb-2 text-sm">
                 These tools provide interactive user interfaces for enhanced
                 user experience.
+              </p>
+              <p className="text-gray-600 mb-4 text-sm">
+                <strong>Note:</strong> When a UI chunk emits a message, it will
+                be displayed in a toast. These messages are intended to be
+                caught by the agent.
               </p>
               <div className="space-y-3">
                 {toolsWithUI.map((tool, index) => (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { UIResourceRenderer } from "@mcp-ui/client";
 
 interface UIResourceFrameProps {
@@ -24,6 +24,11 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
     return iframeSrcToResource(iframeSrc);
   }, [iframeSrc]);
   const [height, setHeight] = useState(initialHeight || 400);
+  const [messageDetails, setMessageDetails] = useState<string | undefined>(
+    undefined,
+  );
+  const [showToast, setShowToast] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const onUiAction = React.useCallback(
     async (message: FrameMessage) => {
@@ -31,7 +36,17 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
         return;
       }
 
-      console.log("--listener-iframe-message", message);
+      const toastMessage = frameMessageToToastMessage(message);
+      if (toastMessage) {
+        setMessageDetails(toastMessage);
+        setShowToast(true);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = setTimeout(() => {
+          setShowToast(false);
+        }, 1000);
+      }
 
       if (message.type === "size-change" && adjustFrameSize) {
         setHeight(message.payload.height);
@@ -44,18 +59,21 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
   );
 
   return (
-    <UIResourceRenderer
-      htmlProps={{
-        style: {
-          height: `${height}px`,
-          minHeight: 0,
-          ...style,
-        },
-        iframeProps: iframeProps,
-      }}
-      onUIAction={onUiAction}
-      resource={resource}
-    />
+    <div className="relative">
+      <Toast show={showToast} message={messageDetails} />
+      <UIResourceRenderer
+        htmlProps={{
+          style: {
+            height: `${height}px`,
+            minHeight: 0,
+            ...style,
+          },
+          iframeProps: iframeProps,
+        }}
+        onUIAction={onUiAction}
+        resource={resource}
+      />
+    </div>
   );
 };
 
@@ -73,6 +91,7 @@ function iframeSrcToResource(iframeSrc: string) {
 export default UIResourceFrame;
 
 import type { UIActionResult } from "@mcp-ui/client";
+import { Toast } from "./Toast";
 
 export const frameMessageTypes = ["tool", "size-change", "intent", "notify"];
 
@@ -96,3 +115,20 @@ export type FrameMessage =
   | UIActionResult
   | FrameMessageSizeChange
   | FrameMessageNotify;
+
+function frameMessageToToastMessage(message: FrameMessage): string | undefined {
+  switch (message.type) {
+    case "notify":
+      return `notify: ${message.payload.message}`;
+    case "tool":
+      return `tool: ${message.payload.toolName}`;
+    case "intent":
+      return `intent: ${message.payload.intent}`;
+    // case "size-change":
+    //   return `size-change: ${
+    //     message.payload.height ? `height: ${message.payload.height}` : ""
+    //   } ${message.payload.width ? `width: ${message.payload.width}` : ""}`;
+    default:
+      return undefined;
+  }
+}
