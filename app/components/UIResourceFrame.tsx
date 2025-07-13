@@ -116,14 +116,22 @@ export type FrameMessage =
   | FrameMessageSizeChange
   | FrameMessageNotify;
 
-function frameMessageToToastMessage(message: FrameMessage): string | undefined {
-  switch (message.type) {
-    case "notify":
-      return `notify: ${message.payload.message}`;
-    case "tool":
-      return `tool: ${message.payload.toolName}`;
-    case "intent":
-      return `intent: ${message.payload.intent}`;
+function frameMessageToToastMessage(
+  frameMessage: FrameMessage,
+): string | undefined {
+  switch (frameMessage.type) {
+    case "notify": {
+      let { message, ...payload } = frameMessage.payload;
+      return `notify: ${message}${getPayloadKeysOnly(payload)}`;
+    }
+    case "tool": {
+      let { toolName, ...payload } = frameMessage.payload;
+      return `tool: ${toolName}${getPayloadKeysOnly(payload)}`;
+    }
+    case "intent": {
+      let { intent, ...payload } = frameMessage.payload;
+      return `intent: ${intent}${getPayloadKeysOnly(payload)}`;
+    }
     // case "size-change":
     //   return `size-change: ${
     //     message.payload.height ? `height: ${message.payload.height}` : ""
@@ -131,4 +139,22 @@ function frameMessageToToastMessage(message: FrameMessage): string | undefined {
     default:
       return undefined;
   }
+}
+
+function getPayloadKeysOnly(payload: Record<string, any>): string {
+  if (Object.keys(payload).length === 0) {
+    return "";
+  }
+  return `, { ${Object.keys(payload)
+    .map((key) => {
+      if (key === "params") {
+        return Object.keys(payload.params)
+          .filter((key) => key !== "domain")
+          .join(", ");
+      } else {
+        return key;
+      }
+    })
+    .filter(Boolean)
+    .join(", ")} }`;
 }
