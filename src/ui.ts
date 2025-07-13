@@ -39,7 +39,7 @@ export function addUIResourcesIfNeeded(
           uri: `ui://product/${product.product_id}`,
           content: {
             type: "externalUrl",
-            iframeUrl: `https://cdn.shopify.com/storefront/product-details.component?store_domain=${storeDomain}&product_handle=${productName}`,
+            iframeUrl: `https://cdn.shopify.com/storefront/product-details.component?store_domain=${storeDomain}&inline=true&product_handle=${productName}`,
           },
           delivery: "text",
         }),
