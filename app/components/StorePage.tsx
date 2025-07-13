@@ -197,9 +197,9 @@ export function StorePage({
                 user experience.
               </p>
               <p className="text-gray-600 mb-4 text-sm">
-                <strong>Note:</strong> When a UI chunk emits a message, it will
-                be displayed in a toast. These messages are intended to be
-                caught by the agent.
+                <strong>Note:</strong> When a UI resource emits a message, it
+                will show a toast. These messages are intended to be caught by
+                the agent.
               </p>
               <div className="space-y-3">
                 {toolsWithUI.map((tool, index) => (
