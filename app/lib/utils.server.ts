@@ -85,19 +85,9 @@ export async function getExampleUIs(
     tools.length > 0 &&
     tools.some((tool) => tool.name === "search_shop_catalog")
   ) {
-    const searchResult = await fetchToolResponse(
-      storeDomain,
-      "search_shop_catalog",
-      {
-        query: "cool",
-        context: "the best products",
-        limit: 6,
-      },
-    );
-    const content = searchResult.content;
-    if (content?.[0]?.type === "text") {
-      const text = content[0].text;
-      const products = JSON.parse(text).products;
+    const rawProducts = await fetchProductWithRetry(storeDomain, 6, 3);
+    if (rawProducts.length > 0) {
+      const products = fillMissingProducts(rawProducts);
       exampleUIs.search_shop_catalog = products
         .slice(0, 3)
         .map((product: { url: string; product_id: string }) => {
@@ -109,18 +99,13 @@ export async function getExampleUIs(
         `https://cdn.shopify.com/storefront/product-details.component?store_domain=${storeDomain}&inline=true&product_handle=${products[3].url.split("/").pop()}`,
       ];
 
+      const availableVariants = chooseAvailableVariants(products);
       const cartParams = {
         shop_domain: storeDomain,
-        add_items: [
-          {
-            product_variant_id: products[4].variants[0].variant_id,
-            quantity: 1,
-          },
-          {
-            product_variant_id: products[5].variants[0].variant_id,
-            quantity: 1,
-          },
-        ],
+        add_items: availableVariants.map((variant) => ({
+          product_variant_id: variant.variant_id,
+          quantity: 1,
+        })),
       };
       const response = await fetchToolResponse(
         storeDomain,
@@ -153,4 +138,95 @@ export async function getExampleUIs(
     }
   }
   return exampleUIs;
+}
+
+const tryQueriesAndContexts = [
+  {
+    query: "cool",
+    context: "the best products",
+  },
+  {
+    query: "best",
+    context: "the best products",
+  },
+  {
+    query: "cheap",
+    context: "the cheapest products",
+  },
+  {
+    query: "new",
+    context: "the newest products",
+  },
+  {
+    query: "popular",
+    context: "the most popular products",
+  },
+];
+
+async function fetchProductWithRetry(
+  storeDomain: string,
+  limit: number,
+  maxRetries: number = 3,
+) {
+  const retries = Math.min(maxRetries, tryQueriesAndContexts.length);
+  for (let i = 0; i < retries; i++) {
+    const result = await fetchProducts(
+      storeDomain,
+      tryQueriesAndContexts[i].query,
+      tryQueriesAndContexts[i].context,
+      limit,
+    );
+    if (result.length >= 2) {
+      return result;
+    }
+  }
+  return [];
+}
+
+async function fetchProducts(
+  storeDomain: string,
+  query: string,
+  context: string,
+  limit: number,
+) {
+  const searchResult = await fetchToolResponse(
+    storeDomain,
+    "search_shop_catalog",
+    {
+      query,
+      context,
+      limit,
+    },
+  );
+  const content = searchResult.content;
+  if (content?.[0]?.type === "text") {
+    const text = content[0].text;
+    const products = JSON.parse(text).products;
+    return products;
+  }
+  return [];
+}
+
+function fillMissingProducts(products: any[]) {
+  return [
+    products.at(0),
+    products.at(1),
+    products.at(2) ?? products.at(0),
+    products.at(3) ?? products.at(1),
+    products.at(-1),
+    products.at(-2),
+  ];
+}
+
+function chooseAvailableVariants(products: any[]) {
+  const variantA =
+    products.at(4).variants.find((variant: any) => variant.available) ??
+    products.at(3).variants.find((variant: any) => variant.available);
+  const variantB =
+    products.at(5).variants.find((variant: any) => variant.available) ??
+    products.at(2).variants.find((variant: any) => variant.available);
+  if (variantA?.variant_id === variantB?.variant_id) {
+    return [variantA];
+  }
+  return [variantA, variantB];
 }
