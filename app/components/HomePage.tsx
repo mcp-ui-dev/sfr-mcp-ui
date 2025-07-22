@@ -1,11 +1,11 @@
 import { Code, Globe, Zap } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 export function HomePage() {
   const [domain, setDomain] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!domain.trim()) return;
@@ -77,7 +77,11 @@ export function HomePage() {
                       id="domain"
                       value={domain}
                       onChange={(e) => setDomain(e.target.value)}
-                      placeholder="shopify.supply"
+                      placeholder={
+                        isMobile
+                          ? "aloyoga.com"
+                          : "aloyoga.com, allbirds.com, goodfair.com, ..."
+                      }
                       className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-center text-lg font-medium placeholder-gray-400"
                       required
                     />
@@ -206,4 +210,15 @@ export function HomePage() {
       </div>
     </div>
   );
+}
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+  }, [matches, query]);
+  return matches;
 }

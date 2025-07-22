@@ -1,4 +1,3 @@
-import ChatPageServer from "../components/chatPage";
 import type { MetaFunction } from "react-router";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -31,27 +30,5 @@ export default function ContentPage({
 }) {
   const { url } = loaderData;
 
-  if (false) {
-    return <ChatPageServer owner={null} repo={null} />;
-  }
-
   return <div>test</div>;
-}
-
-function isChatPage({
-  owner,
-  repo,
-  url,
-}: {
-  owner: string | null;
-  repo: string | null;
-  url: string;
-}) {
-  // is a valid repo
-  const isValid = (owner && repo) || (!repo && owner == "docs");
-  if (!isValid) {
-    return false;
-  }
-  // is a chat page
-  return owner != "chat" && repo != "chat" && url.endsWith("/chat");
 }
