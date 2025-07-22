@@ -7,7 +7,11 @@ import type { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
 export async function getToolsToRegister(requestUrlStr: string) {
   const requestUrl = new URL(requestUrlStr);
 
-  const storeDomain = requestUrl.searchParams.get("store");
+  let storeDomain = requestUrl.searchParams.get("store");
+  // hack for shopify.supply
+  if (storeDomain == "shopify.supply") {
+    storeDomain = "checkout.shopify.supply";
+  }
   logger.debug("Extracted store domain parameter", {
     storeDomain,
     allParams: Array.from(requestUrl.searchParams.entries()),

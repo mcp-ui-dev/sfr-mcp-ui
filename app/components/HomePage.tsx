@@ -77,7 +77,7 @@ export function HomePage() {
                       id="domain"
                       value={domain}
                       onChange={(e) => setDomain(e.target.value)}
-                      placeholder="allbirds.com"
+                      placeholder="shopify.supply"
                       className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-center text-lg font-medium placeholder-gray-400"
                       required
                     />

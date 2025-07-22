@@ -90,6 +90,8 @@ export function StorePage({
   tools: McpToolsResponse["result"]["tools"];
   exampleUIs: Record<string, string[]>;
 }) {
+  const storeNameToUse =
+    storeName == "checkout.shopify.supply" ? "shopify.supply" : storeName;
   const [copied, setCopied] = useState(false);
   const toolsWithUI = [
     "search_shop_catalog",
@@ -120,7 +122,7 @@ export function StorePage({
   };
 
   return (
-    <TooltipProvider delayDuration={700}>
+    <TooltipProvider delayDuration={1000}>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="container mx-auto px-4 py-12 max-w-[920px]">
           {/* Header */}
@@ -137,12 +139,12 @@ export function StorePage({
               This is the MCP server URL for the{" "}
               <strong>
                 <a
-                  href={`https://${storeName}`}
+                  href={`https://${storeNameToUse}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 hover:underline"
                 >
-                  {storeName}
+                  {storeNameToUse}
                 </a>
               </strong>{" "}
               Storefront MCP - which contains interactive UI components for
@@ -280,12 +282,12 @@ export function StorePage({
             <p className="text-gray-500 text-sm mb-4">
               Connect your MCP client to this URL to start using the{" "}
               <a
-                href={`https://${storeName}`}
+                href={`https://${storeNameToUse}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 hover:underline"
               >
-                {storeName}
+                {storeNameToUse}
               </a>{" "}
               Storefront MCP tools.
             </p>

@@ -17,8 +17,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
 export const loader = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
-  const storeName = url.searchParams.get("store");
-  return { url: url.toString(), storeName };
+  return { url: url.toString() };
 };
 
 export function HydrateFallback() {

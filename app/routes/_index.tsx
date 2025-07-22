@@ -5,7 +5,11 @@ import { HomePage } from "~/components/HomePage";
 
 export const loader = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
-  const storeName = url.searchParams.get("store");
+  let storeName = url.searchParams.get("store");
+  // hack for shopify.supply
+  if (storeName == "shopify.supply") {
+    storeName = "checkout.shopify.supply";
+  }
   let tools: McpToolsResponse["result"]["tools"] = [];
   let exampleUIs: Record<string, any> = {};
   if (storeName) {

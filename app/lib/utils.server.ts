@@ -169,6 +169,7 @@ async function fetchProductWithRetry(
   maxRetries: number = 3,
 ) {
   const retries = Math.min(maxRetries, tryQueriesAndContexts.length);
+  let products: any[] = [];
   for (let i = 0; i < retries; i++) {
     const result = await fetchProducts(
       storeDomain,
@@ -176,8 +177,17 @@ async function fetchProductWithRetry(
       tryQueriesAndContexts[i].context,
       limit,
     );
-    if (result.length >= 2) {
-      return result;
+    products = [...products, ...result];
+    const urlSet = new Set();
+    products = products.filter((p) => {
+      if (urlSet.has(p.url)) {
+        return false;
+      }
+      urlSet.add(p.url);
+      return true;
+    });
+    if (products.length >= 3) {
+      return products;
     }
   }
   return [];
