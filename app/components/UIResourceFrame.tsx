@@ -41,7 +41,7 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
   );
   const [showToast, setShowToast] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [mountIframe, setMountIframe] = useState(false);
+  const [mountIframe, setMountIframe] = useState(true);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeProps = useMemo(() => {
