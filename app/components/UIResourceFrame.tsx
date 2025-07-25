@@ -67,7 +67,6 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
         event.source === iframeRef.current?.contentWindow &&
         customCss
       ) {
-        console.log(iframeRef.current?.contentWindow);
         iframeRef.current?.contentWindow?.postMessage(
           {
             type: InternalMessageType.UI_LIFECYCLE_FRAME_RENDER_DATA,

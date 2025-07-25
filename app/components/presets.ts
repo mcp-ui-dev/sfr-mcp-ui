@@ -1,5 +1,7 @@
 export const presets: Record<string, any> = {
-  default: null,
+  default: `body {
+    box-sizing: border-box;
+  }`,
   copilot: `
       shopify-global-cart {
   --shopify-global-cart-text-color-base: rgba(39, 35, 32, 1);
@@ -53,7 +55,7 @@ export const presets: Record<string, any> = {
   .product-layout, .product-card {
   background: linear-gradient(180deg, #fefdfd 0%, #fffbf8 100%);
   }
-  .add-to-cart, .buy-now-button, .action-btn.buy-now, .action-btn.quick-add {
+  .add-to-cart, .buy-now-button, .action-btn.buy-now, .action-btn.quick-add, shopify-variant-selector::part(radio) {
   color: rgba(139, 75, 1, 1) !important;
   background: rgba(252, 251, 250, 1) !important;
     box-shadow:
@@ -61,11 +63,12 @@ export const presets: Record<string, any> = {
     0px 0.5px 0.5px 0.5px rgba(255, 255, 255, 1) inset;
   }
   
-  .add-to-cart:hover, .buy-now-button:hover, .action-btn.buy-now:hover, .action-btn.quick-add:hover {
+  .add-to-cart:hover, .buy-now-button:hover, .action-btn.buy-now:hover, .action-btn.quick-add:hover, shopify-variant-selector::part(radio):hover, shopify-variant-selector::part(radio-selected){
   background: rgba(251, 226, 207, 1) !important;
   box-shadow:
     0px 1px 3px 0px rgba(0, 0, 0, 0.2),
     0px 0px 0px 1px rgba(202, 125, 52, 1) inset;
+    border-color: transparent !important;
   }
 
       `,

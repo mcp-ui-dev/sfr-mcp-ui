@@ -14,7 +14,7 @@ export function ExampleUI({
   const singleIframeRef = useRef<HTMLIFrameElement>(null);
   const customCss = useMemo(
     () => getCustomCss(exampleUIs, preset),
-    [exampleUIs],
+    [exampleUIs, preset],
   );
   if (exampleUIs.length === 0) return null;
   if (exampleUIs.length === 1) {

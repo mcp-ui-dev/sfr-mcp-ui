@@ -216,6 +216,25 @@ export function StorePage({
                 will show a toast. These messages are intended to be caught by
                 the agent.
               </p>
+              <div className="flex items-center space-x-2 mb-4">
+                <p className="text-sm font-medium text-gray-700">UI Style:</p>
+                <Button
+                  variant={dynamicPreset === "default" ? "outline" : "default"}
+                  size="sm"
+                  onClick={() => setDynamicPreset("default")}
+                  className="bg-white hover:bg-gray-100 cursor-pointer"
+                >
+                  Default
+                </Button>
+                <Button
+                  variant={dynamicPreset === "copilot" ? "outline" : "default"}
+                  size="sm"
+                  onClick={() => setDynamicPreset("copilot")}
+                  className="bg-white hover:bg-gray-100 cursor-pointer"
+                >
+                  Copilot
+                </Button>
+              </div>
               <div className="space-y-3">
                 {toolsWithUI.map((tool, index) => (
                   <div
@@ -240,7 +259,7 @@ export function StorePage({
                         <ExampleUI
                           toolName={tool.name}
                           exampleUIs={exampleUIs[tool.name]}
-                          preset={preset}
+                          preset={dynamicPreset}
                         />
                       )}
                     </div>
