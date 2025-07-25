@@ -21,6 +21,12 @@ export const loader = async ({ request }: { request: Request }) => {
       exampleUIs = await getExampleUIs(storeName, tools);
     }
   }
+  // clear all search params except 'store'
+  url.searchParams.forEach((value, key) => {
+    if (key !== "store") {
+      url.searchParams.delete(key);
+    }
+  });
   return { url: url.toString(), storeName, tools, exampleUIs, style };
 };
 
