@@ -6,6 +6,7 @@ import { HomePage } from "~/components/HomePage";
 export const loader = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
   let storeName = url.searchParams.get("store");
+  const style = url.searchParams.get("style") ?? "default";
   // hack for shopify.supply
   if (storeName == "shopify.supply") {
     storeName = "checkout.shopify.supply";
@@ -20,7 +21,7 @@ export const loader = async ({ request }: { request: Request }) => {
       exampleUIs = await getExampleUIs(storeName, tools);
     }
   }
-  return { url: url.toString(), storeName, tools, exampleUIs };
+  return { url: url.toString(), storeName, tools, exampleUIs, style };
 };
 
 export default function Home({
@@ -28,13 +29,14 @@ export default function Home({
 }: {
   loaderData: Awaited<ReturnType<typeof loader>>;
 }) {
-  const { storeName, url, tools, exampleUIs } = loaderData;
+  const { storeName, url, tools, exampleUIs, style } = loaderData;
   return storeName ? (
     <StorePage
       url={url}
       storeName={storeName}
       tools={tools}
       exampleUIs={exampleUIs}
+      preset={style}
     />
   ) : (
     <HomePage />

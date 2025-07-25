@@ -36,8 +36,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       '@mcp-ui/client':
-        specifier: ^4.1.1
-        version: 4.1.1(@preact/signals-core@1.11.0)
+        specifier: ^5.3.1
+        version: 5.3.1(@preact/signals-core@1.11.0)
       '@mcp-ui/server':
         specifier: ^4.1.1
         version: 4.1.1
@@ -1169,8 +1169,8 @@ packages:
   '@kamilkisiela/fast-url-parser@1.1.4':
     resolution: {integrity: sha512-gbkePEBupNydxCelHCESvFSFM8XPh1Zs/OAVRW/rKpEqPAl5PbOM90Si8mv9bvnR53uPD2s/FiRxdvSejpRJew==}
 
-  '@mcp-ui/client@4.1.1':
-    resolution: {integrity: sha512-vH3AgSepsSDNKbhviVAXxIzhKfgDlrUU9RaNnexiwVxzIEfndSfHjgEWf3ycXffI/pBfxucH35+Eo4OAGVlWKw==}
+  '@mcp-ui/client@5.3.1':
+    resolution: {integrity: sha512-COcpCwV+SKd2m9Me++aG9Xm1sb4WMyl+Ak4cepe4EGzMqypjdn5f+KbOMGzs7itFOWhf8LVxeMTFsbeI38dQvg==}
 
   '@mcp-ui/server@4.1.1':
     resolution: {integrity: sha512-DnCwpAEa0gQnhr6+dmJJpJmFEjPNO8MnH/5lREtO6LImZhjFgUv15YC/YFHn5bOEgyQ32SQat4/IGXPUK/11oQ==}
@@ -5043,7 +5043,7 @@ snapshots:
 
   '@kamilkisiela/fast-url-parser@1.1.4': {}
 
-  '@mcp-ui/client@4.1.1(@preact/signals-core@1.11.0)':
+  '@mcp-ui/client@5.3.1(@preact/signals-core@1.11.0)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.11.2
       '@quilted/threads': 3.3.1(@preact/signals-core@1.11.0)

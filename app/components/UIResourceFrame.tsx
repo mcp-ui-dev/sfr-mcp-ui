@@ -1,4 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { UIResourceRenderer } from "@mcp-ui/client";
 
 interface UIResourceFrameProps {
@@ -6,9 +12,10 @@ interface UIResourceFrameProps {
   handleUiAction?: (message: FrameMessage) => Promise<unknown>;
   adjustFrameSize?: boolean;
   style?: React.CSSProperties;
-  iframeProps?: React.IframeHTMLAttributes<HTMLIFrameElement>;
+  frameProps?: React.IframeHTMLAttributes<HTMLIFrameElement>;
   initialHeight?: number;
   initialWidth?: number;
+  customCss?: string;
 }
 
 const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
@@ -17,11 +24,16 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
   adjustFrameSize,
   style,
   initialHeight,
-  iframeProps,
+  frameProps,
+  customCss,
 }) => {
   // convert to standard resource format
   const resource = React.useMemo(() => {
-    return iframeSrcToResource(iframeSrc);
+    const iframeUrl = new URL(iframeSrc);
+    if (customCss) {
+      iframeUrl.searchParams.set("waitForRenderData", "true");
+    }
+    return iframeSrcToResource(iframeUrl.toString());
   }, [iframeSrc]);
   const [height, setHeight] = useState(initialHeight || 400);
   const [messageDetails, setMessageDetails] = useState<string | undefined>(
@@ -29,6 +41,48 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
   );
   const [showToast, setShowToast] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [mountIframe, setMountIframe] = useState(false);
+
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const iframeProps = useMemo(() => {
+    return { ...frameProps, ref: iframeRef as RefObject<HTMLIFrameElement> };
+  }, [frameProps]);
+
+  useEffect(() => {
+    iframeRef.current?.contentWindow?.postMessage(
+      {
+        type: InternalMessageType.UI_LIFECYCLE_FRAME_RENDER_DATA,
+        payload: {
+          renderData: { customCss },
+        },
+      },
+      "*",
+    );
+  }, [customCss]);
+
+  useEffect(() => {
+    const messageHandler = (event: MessageEvent) => {
+      if (
+        event?.data?.type === InternalMessageType.UI_LIFECYCLE_FRAME_READY &&
+        event.source === iframeRef.current?.contentWindow &&
+        customCss
+      ) {
+        console.log(iframeRef.current?.contentWindow);
+        iframeRef.current?.contentWindow?.postMessage(
+          {
+            type: InternalMessageType.UI_LIFECYCLE_FRAME_RENDER_DATA,
+            payload: {
+              renderData: { customCss },
+            },
+          },
+          "*",
+        );
+      }
+    };
+    window.addEventListener("message", messageHandler);
+    setMountIframe(true);
+    return () => window.removeEventListener("message", messageHandler);
+  }, [customCss]);
 
   const onUiAction = React.useCallback(
     async (message: FrameMessage) => {
@@ -55,24 +109,26 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
         handleUiAction?.(message);
       }
     },
-    [handleUiAction, adjustFrameSize],
+    [handleUiAction, adjustFrameSize, customCss],
   );
 
   return (
     <div className="relative">
       <Toast show={showToast} message={messageDetails} />
-      <UIResourceRenderer
-        htmlProps={{
-          style: {
-            height: `${height}px`,
-            minHeight: 0,
-            ...style,
-          },
-          iframeProps: iframeProps,
-        }}
-        onUIAction={onUiAction}
-        resource={resource}
-      />
+      {mountIframe && (
+        <UIResourceRenderer
+          htmlProps={{
+            style: {
+              height: `${height}px`,
+              minHeight: 0,
+              ...style,
+            },
+            iframeProps: iframeProps,
+          }}
+          onUIAction={onUiAction}
+          resource={resource}
+        />
+      )}
     </div>
   );
 };
@@ -158,3 +214,12 @@ function getPayloadKeysOnly(payload: Record<string, any>): string {
     .filter(Boolean)
     .join(", ")} }`;
 }
+
+const InternalMessageType = {
+  UI_LIFECYCLE_FRAME_READY: "ui-lifecycle-iframe-ready",
+  UI_LIFECYCLE_FRAME_RENDER_DATA: "ui-lifecycle-iframe-render-data",
+} as const;
+
+const ReservedUrlParams = {
+  WAIT_FOR_RENDER_DATA: "waitForRenderData",
+} as const;

@@ -13,13 +13,14 @@ import {
   Package,
   Info,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { McpToolsResponse } from "~/lib/utils";
 import { TooltipProvider } from "~/chat/components/ui/tooltip";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { truncateToTwoSentences } from "~/lib/utils";
 import { cn } from "~/lib/utils";
 import { ExampleUI } from "./ExampleUI";
+import { presets } from "./presets";
 
 interface Tool {
   name: string;
@@ -84,12 +85,24 @@ export function StorePage({
   storeName,
   tools,
   exampleUIs,
+  preset,
 }: {
   url: string;
   storeName: string;
   tools: McpToolsResponse["result"]["tools"];
   exampleUIs: Record<string, string[]>;
+  preset: string;
 }) {
+  const [dynamicPreset, setDynamicPreset] = useState(
+    presets[preset ?? "default"] ? (preset ?? "default") : "default",
+  );
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("style", dynamicPreset);
+    window.history.pushState(null, "", url.toString());
+  }, [dynamicPreset]);
+
   const storeNameToUse =
     storeName == "checkout.shopify.supply" ? "shopify.supply" : storeName;
   const [copied, setCopied] = useState(false);
@@ -227,6 +240,7 @@ export function StorePage({
                         <ExampleUI
                           toolName={tool.name}
                           exampleUIs={exampleUIs[tool.name]}
+                          preset={preset}
                         />
                       )}
                     </div>
