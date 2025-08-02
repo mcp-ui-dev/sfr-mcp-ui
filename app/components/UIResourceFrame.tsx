@@ -101,7 +101,7 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
         }, 1000);
       }
 
-      if (message.type === "size-change" && adjustFrameSize) {
+      if (message.type === "ui-size-change" && adjustFrameSize) {
         setHeight(message.payload.height);
         return;
       } else {
@@ -148,10 +148,10 @@ export default UIResourceFrame;
 import type { UIActionResult } from "@mcp-ui/client";
 import { Toast } from "./Toast";
 
-export const frameMessageTypes = ["tool", "size-change", "intent", "notify"];
+export const frameMessageTypes = ["tool", "ui-size-change", "intent", "notify"];
 
 type FrameMessageSizeChange = {
-  type: "size-change";
+  type: "ui-size-change";
   payload: {
     height: number;
     width: number;
@@ -187,10 +187,6 @@ function frameMessageToToastMessage(
       let { intent, ...payload } = frameMessage.payload;
       return `intent: ${intent}${getPayloadKeysOnly(payload)}`;
     }
-    // case "size-change":
-    //   return `size-change: ${
-    //     message.payload.height ? `height: ${message.payload.height}` : ""
-    //   } ${message.payload.width ? `width: ${message.payload.width}` : ""}`;
     default:
       return undefined;
   }
