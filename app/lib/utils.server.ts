@@ -229,17 +229,21 @@ function fillMissingProducts(products: any[]) {
 }
 
 function chooseAvailableVariants(products: any[]) {
-  const variantA =
-    (products.at(4).variants ?? []).find((variant: any) => variant.available) ??
-    (products.at(3).variants ?? []).find((variant: any) => variant.available);
-  const variantB =
-    (products.at(5).variants ?? []).find((variant: any) => variant.available) ??
-    (products.at(2).variants ?? []).find((variant: any) => variant.available);
-  if (!variantA && !variantB) {
-    return [];
+  const variants: {
+    variant_id: string;
+  }[] = [];
+  for (let i = products.length - 1; i >= 0; i--) {
+    if (products[i].variants) {
+      const variant = products[i].variants.find(
+        (variant: any) => variant.available,
+      );
+      if (
+        variant &&
+        !variants.some((v: any) => v.variant_id === variant.variant_id)
+      ) {
+        variants.push(variant);
+      }
+    }
   }
-  if (variantA?.variant_id === variantB?.variant_id) {
-    return [variantA];
-  }
-  return [variantA, variantB];
+  return variants.slice(0, 2);
 }
