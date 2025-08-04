@@ -95,8 +95,9 @@ export async function getExampleUIs(
           return `https://cdn.shopify.com/storefront/product.component?store_domain=${storeDomain}&product_handle=${productName}`;
         });
 
+      const llmDescription = `This is an awesome product, which fits your needs exactly. It has great reviews, made from the best materials, and is guaranteed to be exactly what you need. A great choice!`;
       exampleUIs.get_product_details = [
-        `https://cdn.shopify.com/storefront/product-details.component?store_domain=${storeDomain}&inline=true&product_handle=${products[3].url.split("/").pop()}`,
+        `https://cdn.shopify.com/storefront/product-details.component?store_domain=${storeDomain}&inline=true&product_handle=${products[3].url.split("/").pop()}&llm_description=${btoa(llmDescription)}`,
       ];
 
       const availableVariants = chooseAvailableVariants(products);
