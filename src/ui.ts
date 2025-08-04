@@ -5,6 +5,7 @@ export function addUIResourcesIfNeeded(
   storeDomain: string,
   toolName: string,
   result: CallToolResult,
+  baseUrl: string,
 ) {
   const content = result.content;
   if (content?.[0]?.type !== "text") {
@@ -21,7 +22,7 @@ export function addUIResourcesIfNeeded(
             uri: `ui://product/${product.product_id}`,
             content: {
               type: "externalUrl",
-              iframeUrl: `https://cdn.shopify.com/storefront/product.component?store_domain=${storeDomain}&product_handle=${productName}`,
+              iframeUrl: `${baseUrl}/storefront/product.component?store_domain=${storeDomain}&product_handle=${productName}`,
             },
             delivery: "text",
           });
@@ -39,7 +40,7 @@ export function addUIResourcesIfNeeded(
           uri: `ui://product/${product.product_id}`,
           content: {
             type: "externalUrl",
-            iframeUrl: `https://cdn.shopify.com/storefront/product-details.component?store_domain=${storeDomain}&inline=true&product_handle=${productName}`,
+            iframeUrl: `${baseUrl}/storefront/product-details.component?store_domain=${storeDomain}&inline=true&product_handle=${productName}`,
           },
           delivery: "text",
         }),
@@ -56,7 +57,7 @@ export function addUIResourcesIfNeeded(
           uri: `ui://cart/${cartId}`,
           content: {
             type: "externalUrl",
-            iframeUrl: `https://cdn.shopify.com/storefront/global-cart.component?carts=${encodeURIComponent(
+            iframeUrl: `${baseUrl}/storefront/global-cart.component?carts=${encodeURIComponent(
               JSON.stringify([
                 {
                   shop: storeDomain,

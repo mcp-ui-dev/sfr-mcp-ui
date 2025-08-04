@@ -7,7 +7,12 @@ import type { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
 export async function getToolsToRegister(requestUrlStr: string) {
   const requestUrl = new URL(requestUrlStr);
 
+  let baseUrl = "https://cdn.shopify.com";
   let storeDomain = requestUrl.searchParams.get("store");
+  if (requestUrl.searchParams.get("store_domain")) {
+    storeDomain = requestUrl.searchParams.get("store_domain");
+    baseUrl = `${requestUrl.protocol}//${requestUrl.host}/static`;
+  }
   // hack for shopify.supply
   if (storeDomain == "shopify.supply") {
     storeDomain = "checkout.shopify.supply";
@@ -116,7 +121,12 @@ export async function getToolsToRegister(requestUrlStr: string) {
             jsonrpc: json.jsonrpc,
           });
 
-          return addUIResourcesIfNeeded(storeDomain, tool.name, json.result);
+          return addUIResourcesIfNeeded(
+            storeDomain,
+            tool.name,
+            json.result,
+            baseUrl,
+          );
         } catch (error) {
           const errorDuration = Date.now() - toolCallStartTime;
           logger.error("Tool call failed", {

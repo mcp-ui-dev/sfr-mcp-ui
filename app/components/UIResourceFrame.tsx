@@ -148,7 +148,13 @@ export default UIResourceFrame;
 import type { UIActionResult } from "@mcp-ui/client";
 import { Toast } from "./Toast";
 
-export const frameMessageTypes = ["tool", "ui-size-change", "intent", "notify"];
+export const frameMessageTypes = [
+  "tool",
+  "ui-size-change",
+  "intent",
+  "notify",
+  "prompt",
+];
 
 type FrameMessageSizeChange = {
   type: "ui-size-change";
@@ -186,6 +192,10 @@ function frameMessageToToastMessage(
     case "intent": {
       let { intent, ...payload } = frameMessage.payload;
       return `intent: ${intent}${getPayloadKeysOnly(payload)}`;
+    }
+    case "prompt": {
+      let { prompt } = frameMessage.payload;
+      return `prompt: ${prompt.replace("gid://shopify/ProductVariant/", "").replace(/Checkout using url .*?$/, "Checkout using url <checkout-url>")}`;
     }
     default:
       return undefined;

@@ -79,6 +79,7 @@ export async function fetchToolResponse(
 export async function getExampleUIs(
   storeDomain: string,
   tools: McpToolsResponse["result"]["tools"],
+  baseUrl: string,
 ) {
   const exampleUIs: Record<string, string[]> = {};
   if (
@@ -92,12 +93,12 @@ export async function getExampleUIs(
         .slice(0, 3)
         .map((product: { url: string; product_id: string }) => {
           const productName = product.url.split("/").pop();
-          return `https://cdn.shopify.com/storefront/product.component?store_domain=${storeDomain}&product_handle=${productName}`;
+          return `${baseUrl}/storefront/product.component?store_domain=${storeDomain}&product_handle=${productName}`;
         });
 
       const llmDescription = `This is an awesome product, which fits your needs exactly. It has great reviews, made from the best materials, and is guaranteed to be exactly what you need. A great choice!`;
       exampleUIs.get_product_details = [
-        `https://cdn.shopify.com/storefront/product-details.component?store_domain=${storeDomain}&inline=true&product_handle=${products[3].url.split("/").pop()}&llm_description=${btoa(llmDescription)}`,
+        `${baseUrl}/storefront/product-details.component?store_domain=${storeDomain}&inline=true&product_handle=${products[3].url.split("/").pop()}&llm_description=${btoa(llmDescription)}`,
       ];
 
       const availableVariants = chooseAvailableVariants(products);
@@ -116,7 +117,7 @@ export async function getExampleUIs(
       if (response.content?.[0]?.type === "text") {
         const cartId = JSON.parse(response.content[0].text).cart.id;
         exampleUIs.update_cart = [
-          `https://cdn.shopify.com/storefront/global-cart.component?carts=${encodeURIComponent(
+          `${baseUrl}/storefront/global-cart.component?carts=${encodeURIComponent(
             JSON.stringify([
               {
                 shop: storeDomain,
@@ -126,7 +127,7 @@ export async function getExampleUIs(
           )}`,
         ];
         exampleUIs.get_cart = [
-          `https://cdn.shopify.com/storefront/global-cart.component?carts=${encodeURIComponent(
+          `${baseUrl}/storefront/global-cart.component?carts=${encodeURIComponent(
             JSON.stringify([
               {
                 shop: storeDomain,
