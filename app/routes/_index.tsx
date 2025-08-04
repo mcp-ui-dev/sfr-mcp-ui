@@ -9,7 +9,7 @@ export const loader = async ({ request }: { request: Request }) => {
   let storeName = url.searchParams.get("store");
   if (url.searchParams.get("store_domain")) {
     storeName = url.searchParams.get("store_domain");
-    baseUrl = `${url.protocol}//${url.host}/static`;
+    baseUrl = `${url.protocol}//${url.host}`;
   }
   const style = url.searchParams.get("style") ?? "default";
   // hack for shopify.supply
