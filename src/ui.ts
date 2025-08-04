@@ -11,6 +11,9 @@ export function addUIResourcesIfNeeded(
   if (content?.[0]?.type !== "text") {
     return result;
   }
+  const postfix = baseUrl.includes("cdn.shopify.com")
+    ? "component"
+    : "component.html";
   const text = content[0].text;
   switch (toolName) {
     case "search_shop_catalog":
@@ -22,7 +25,7 @@ export function addUIResourcesIfNeeded(
             uri: `ui://product/${product.product_id}`,
             content: {
               type: "externalUrl",
-              iframeUrl: `${baseUrl}/storefront/product.component?store_domain=${storeDomain}&product_handle=${productName}`,
+              iframeUrl: `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&product_handle=${productName}`,
             },
             delivery: "text",
           });
@@ -40,7 +43,7 @@ export function addUIResourcesIfNeeded(
           uri: `ui://product/${product.product_id}`,
           content: {
             type: "externalUrl",
-            iframeUrl: `${baseUrl}/storefront/product-details.component?store_domain=${storeDomain}&inline=true&product_handle=${productName}`,
+            iframeUrl: `${baseUrl}/storefront/product-details.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${productName}`,
           },
           delivery: "text",
         }),
@@ -57,7 +60,7 @@ export function addUIResourcesIfNeeded(
           uri: `ui://cart/${cartId}`,
           content: {
             type: "externalUrl",
-            iframeUrl: `${baseUrl}/storefront/global-cart.component?carts=${encodeURIComponent(
+            iframeUrl: `${baseUrl}/storefront/global-cart.${postfix}?carts=${encodeURIComponent(
               JSON.stringify([
                 {
                   shop: storeDomain,

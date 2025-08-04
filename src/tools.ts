@@ -11,7 +11,7 @@ export async function getToolsToRegister(requestUrlStr: string) {
   let storeDomain = requestUrl.searchParams.get("store");
   if (requestUrl.searchParams.get("store_domain")) {
     storeDomain = requestUrl.searchParams.get("store_domain");
-    baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
+    baseUrl = `${requestUrl.protocol}//${requestUrl.host}/img`;
   }
   // hack for shopify.supply
   if (storeDomain == "shopify.supply") {

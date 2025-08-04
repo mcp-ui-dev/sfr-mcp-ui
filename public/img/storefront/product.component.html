@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>MCP-UI Proxy</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100vh;
+        width: 100vw;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      iframe {
+        background-color: transparent;
+        border: 0px none transparent;
+        padding: 0px;
+        overflow: hidden;
+        flex-grow: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      const searchParams = new URLSearchParams(location.search);
+      const intentsAsPrompts = searchParams.get("intentsAsPrompts") === "true";
+      searchParams.delete("intentsAsPrompts");
+      const target = `https://cdn.shopify.com/storefront/product.component?${searchParams.toString()}`;
+
+      // Validate that the URL is a valid HTTP or HTTPS URL
+      function isValidHttpUrl(string) {
+        try {
+          const url = new URL(string);
+          return url.protocol === "http:" || url.protocol === "https:";
+        } catch (error) {
+          return false;
+        }
+      }
+
+      if (!target) {
+        document.body.textContent = "Error: missing url parameter";
+      } else if (!isValidHttpUrl(target)) {
+        document.body.textContent =
+          "Error: invalid URL. Only HTTP and HTTPS URLs are allowed.";
+      } else {
+        const inner = document.createElement("iframe");
+        inner.src = target;
+        inner.style = "width:100%; height:100%; border:none;";
+        inner.sandbox = "allow-same-origin allow-scripts";
+        document.body.appendChild(inner);
+        const urlOrigin = new URL(target).origin;
+
+        window.addEventListener("message", (event) => {
+          if (event.source === window.parent) {
+            // listen for messages from the parent and send them to the iframe
+            inner.contentWindow.postMessage(event.data, urlOrigin);
+          } else if (event.source === inner.contentWindow) {
+            // listen for messages from the iframe and send them to the parent
+            window.parent.postMessage(convertIntentToPrompt(event.data), "*");
+          }
+        });
+
+        function convertIntentToPrompt(data) {
+          if (data?.type === "intent") {
+            const { params, intent } = data.payload ?? {};
+            switch (intent) {
+              case "add_to_cart": {
+                const { product, domain, quantity } = params;
+                return {
+                  type: "prompt",
+                  payload: {
+                    prompt: `[mcp-ui:add_to_cart] please add ${product} to cart with quantity ${quantity ?? 1} from ${domain}`,
+                  },
+                };
+              }
+              case "view_details": {
+                const { product, domain } = params;
+                let domainToUse = domain;
+                if (domainToUse.startsWith("https://")) {
+                  const url = new URL(domainToUse);
+                  domainToUse = url.hostname;
+                }
+                return {
+                  type: "prompt",
+                  payload: {
+                    prompt: `[mcp-ui:view_details] please show the details of ${product} from domain ${domainToUse}`,
+                  },
+                };
+              }
+              case "checkout": {
+                const { product, domain, url } = params;
+                return {
+                  type: "prompt",
+                  payload: {
+                    prompt: `[mcp-ui-prompt]: Checkout using url ${url}`,
+                  },
+                };
+              }
+              case "link": {
+                const { url } = params;
+                return {
+                  type: "prompt",
+                  payload: {
+                    prompt: `[mcp-ui-prompt]: Please open the url ${url} in a new tab`,
+                  },
+                };
+              }
+            }
+          } else {
+            return data;
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
