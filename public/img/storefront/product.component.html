@@ -71,11 +71,11 @@
             const { params, intent } = data.payload ?? {};
             switch (intent) {
               case "add_to_cart": {
-                const { product, domain, quantity } = params;
+                const { product, domain, quantity, productHandle } = params;
                 return {
                   type: "prompt",
                   payload: {
-                    prompt: `[mcp-ui:add_to_cart] please add ${product} to cart with quantity ${quantity ?? 1} from ${domain}`,
+                    prompt: `[mcp-ui:add_to_cart] please add ${product} with product handle ${productHandle} to cart with quantity ${quantity ?? 1} from ${domain}`,
                   },
                 };
               }
@@ -89,7 +89,7 @@
                 return {
                   type: "prompt",
                   payload: {
-                    prompt: `[mcp-ui:view_details] please show the details of ${product} from domain ${domainToUse}`,
+                    prompt: `[mcp-ui:view_details] please show the details of ${product} with product handle ${productHandle} from domain ${domainToUse}`,
                   },
                 };
               }
