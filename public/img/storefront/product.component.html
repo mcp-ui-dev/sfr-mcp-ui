@@ -80,7 +80,7 @@
                 };
               }
               case "view_details": {
-                const { product, domain } = params;
+                const { product, domain, productHandle } = params;
                 let domainToUse = domain;
                 if (domainToUse.startsWith("https://")) {
                   const url = new URL(domainToUse);
