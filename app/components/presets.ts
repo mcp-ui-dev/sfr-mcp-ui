@@ -3,32 +3,32 @@ export const presets: Record<string, any> = {
     box-sizing: border-box;
   }`,
   copilot: `
-      shopify-global-cart {
-  --shopify-global-cart-text-color-base: rgba(39, 35, 32, 1);
-  --shopify-global-cart-text-color-subdued: rgba(0, 0, 0, 0.56);
-  --shopify-global-cart-border-color-base: rgba(235, 233, 231, 1);
-  --shopify-global-cart-border-radius-base: 10px;
-  --shopify-global-cart-border-radius-small: 6px;
+      shopify-universal-cart {
+  --shopify-universal-cart-text-color-base: rgba(39, 35, 32, 1);
+  --shopify-universal-cart-text-color-subdued: rgba(0, 0, 0, 0.56);
+  --shopify-universal-cart-border-color-base: rgba(235, 233, 231, 1);
+  --shopify-universal-cart-border-radius-base: 10px;
+  --shopify-universal-cart-border-radius-small: 6px;
   }
   
-  shopify-global-cart::part(cart-group) {
+  shopify-universal-cart::part(cart-group) {
   background: linear-gradient(180deg, #fefdfd 0%, #fffbf8 100%);
   }
   
-  shopify-global-cart::part(primary-button) {
-  --shopify-global-cart-text-color-base: rgba(139, 75, 1, 1);
-  --shopify-global-cart-text-color-subdued: rgba(139, 75, 1, 0.8);
+  shopify-universal-cart::part(primary-button) {
+  --shopify-universal-cart-text-color-base: rgba(139, 75, 1, 1);
+  --shopify-universal-cart-text-color-subdued: rgba(139, 75, 1, 0.8);
   background: rgba(252, 251, 250, 1);
   }
   
-  shopify-global-cart::part(primary-button):hover {
+  shopify-universal-cart::part(primary-button):hover {
   background: rgba(251, 226, 207, 1);
   box-shadow:
     0px 1px 3px 0px rgba(0, 0, 0, 0.2),
     0px 0px 0px 1px rgba(202, 125, 52, 1) inset;
   }
   
-  shopify-global-cart::part(secondary-button) {
+  shopify-universal-cart::part(secondary-button) {
   color: inherit;
   background: rgba(252, 251, 250, 1);
   box-shadow:
@@ -36,13 +36,13 @@ export const presets: Record<string, any> = {
     0px 0.5px 0.5px 0.5px rgba(255, 255, 255, 1) inset;
   }
   
-  shopify-global-cart::part(line-summary-quantity) {
+  shopify-universal-cart::part(line-summary-quantity) {
   color: inherit;
   border-color: #fefdfd;
   }
   
-  shopify-global-cart::part(shop-logo),
-  shopify-global-cart::part(line-summary-quantity) {
+  shopify-universal-cart::part(shop-logo),
+  shopify-universal-cart::part(line-summary-quantity) {
   background: linear-gradient(
     180deg,
     #fefdfd 0%,
