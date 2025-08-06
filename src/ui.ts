@@ -60,7 +60,7 @@ export function addUIResourcesIfNeeded(
           uri: `ui://cart/${cartId}`,
           content: {
             type: "externalUrl",
-            iframeUrl: `${baseUrl}/storefront/global-cart.${postfix}?carts=${encodeURIComponent(
+            iframeUrl: `${baseUrl}/storefront/universal-cart.${postfix}?carts=${encodeURIComponent(
               JSON.stringify([
                 {
                   shop: storeDomain,

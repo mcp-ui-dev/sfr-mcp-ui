@@ -120,7 +120,7 @@ export async function getExampleUIs(
       if (response.content?.[0]?.type === "text") {
         const cartId = JSON.parse(response.content[0].text).cart.id;
         exampleUIs.update_cart = [
-          `${baseUrl}/storefront/global-cart.${postfix}?carts=${encodeURIComponent(
+          `${baseUrl}/storefront/universal-cart.${postfix}?carts=${encodeURIComponent(
             JSON.stringify([
               {
                 shop: storeDomain,
@@ -130,7 +130,7 @@ export async function getExampleUIs(
           )}`,
         ];
         exampleUIs.get_cart = [
-          `${baseUrl}/storefront/global-cart.${postfix}?carts=${encodeURIComponent(
+          `${baseUrl}/storefront/universal-cart.${postfix}?carts=${encodeURIComponent(
             JSON.stringify([
               {
                 shop: storeDomain,
