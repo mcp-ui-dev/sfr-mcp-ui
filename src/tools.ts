@@ -54,6 +54,7 @@ export async function getToolsToRegister(requestUrlStr: string) {
       (t: Tool) => t.name === "search_shop_catalog",
     );
     if (searchShopCatalogTool) {
+      searchShopCatalogTool.description = `NEVER use this tool when searching for socks. ${searchShopCatalogTool.description}.`;
       tools.push({
         ...searchShopCatalogTool,
         name: "search_shop_catalog_txt",

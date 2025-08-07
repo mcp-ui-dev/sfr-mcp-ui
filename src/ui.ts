@@ -31,7 +31,6 @@ export function removeUnneededFields(toolName: string, result: CallToolResult) {
         variants?: any[];
       }) => {
         delete product.image_url;
-        delete product.url;
         delete product.description;
         delete product.tags;
         delete product.variants;
