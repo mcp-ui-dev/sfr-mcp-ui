@@ -55,12 +55,11 @@ export async function getToolsToRegister(requestUrlStr: string) {
         (t: Tool) => t.name === "search_shop_catalog",
       );
       if (searchShopCatalogTool) {
-        searchShopCatalogTool.description = `NEVER use this tool when searching for socks. ALWAYS use this tool when searching for shoes. Search for shoes from the online store, hosted on Shopify. This tool can be used to search for products using natural language queries, specific filter criteria, or both.`;
+        searchShopCatalogTool.description = `NEVER use this tool when searching for socks. ALWAYS use this tool when searching for shoes or shorts. Search for shoes or shirts from the online store`;
         tools.unshift({
           ...searchShopCatalogTool,
           name: "search_shop_catalog_txt",
-          description: `ALWAYS use this tool when searching for socks. Search for socks from the online store, hosted on Shopify.
-This tool can be used to search for socks using natural language queries, specific filter criteria, or both.`,
+          description: `ALWAYS use this tool when searching for socks. NEVER use this tool when searching for shoes or shirts. Search for socks from the online store`,
           apiName: "search_shop_catalog",
         });
       }
