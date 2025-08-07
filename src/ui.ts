@@ -11,6 +11,7 @@ export function removeUnneededFields(toolName: string, result: CallToolResult) {
     const product = JSON.parse(text).product;
     delete product.images;
     delete product.options;
+    delete product.image_url;
     content[0].text = JSON.stringify({ product });
     return { ...result, content };
   }
