@@ -1,6 +1,6 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { logger } from "./utils/logger";
-import { addUIResourcesIfNeeded } from "./ui";
+import { addUIResourcesIfNeeded, removeUnneededFields } from "./ui";
 import { JsonSchemaToZodRawSchema } from "./utils/schema";
 import type { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
 
@@ -56,7 +56,7 @@ export async function getToolsToRegister(requestUrlStr: string) {
     if (searchShopCatalogTool) {
       tools.push({
         ...searchShopCatalogTool,
-        name: "search_shop_catalog_for_socks",
+        name: "search_shop_catalog_txt",
         description: `Search for socks from the online store, hosted on Shopify.
 ALWAYS use this tool when searching for socks.
 This tool can be used to search for socks using natural language queries, specific filter criteria, or both.`,
@@ -143,20 +143,32 @@ This tool can be used to search for socks using natural language queries, specif
           }
 
           const json = (await result.json()) as JsonRpcToolsCallResponse;
+          let callToolResult = json.result;
           const totalDuration = Date.now() - toolCallStartTime;
 
           logger.info("Tool call completed successfully", {
             toolName: tool.name,
-            result: json.result,
+            result: callToolResult,
             totalDuration,
             responseId: json.id,
             jsonrpc: json.jsonrpc,
           });
 
+          if (experimentalMode) {
+            try {
+              callToolResult = removeUnneededFields(tool.name, callToolResult);
+            } catch (error) {
+              logger.error("Failed to remove unneeded fields", {
+                toolName: tool.name,
+                error: error instanceof Error ? error.message : String(error),
+              });
+            }
+          }
+
           return addUIResourcesIfNeeded(
             storeDomain,
             tool.name,
-            json.result,
+            callToolResult,
             baseUrl,
           );
         } catch (error) {

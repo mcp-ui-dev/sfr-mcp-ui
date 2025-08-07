@@ -1,6 +1,22 @@
 import { createUIResource } from "@mcp-ui/server";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
+export function removeUnneededFields(toolName: string, result: CallToolResult) {
+  const content = result?.content ?? [];
+  if (content?.[0]?.type !== "text") {
+    return result;
+  }
+  const text = content[0].text;
+  if (toolName === "get_product_details") {
+    const product = JSON.parse(text).product;
+    delete product.images;
+    delete product.options;
+    content[0].text = JSON.stringify({ product });
+    return { ...result, content };
+  }
+  return result;
+}
+
 export function addUIResourcesIfNeeded(
   storeDomain: string,
   toolName: string,
