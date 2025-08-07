@@ -19,9 +19,19 @@ export function removeUnneededFields(toolName: string, result: CallToolResult) {
   if ((toolName = "search_shop_catalog")) {
     const obj = JSON.parse(text);
     const products = obj.products;
-    products.forEach((product: { image_url?: string }) => {
-      delete product.image_url;
-    });
+    products.forEach(
+      (product: {
+        image_url?: string;
+        url?: string;
+        description?: string;
+        tags?: string[];
+      }) => {
+        delete product.image_url;
+        delete product.url;
+        delete product.description;
+        delete product.tags;
+      },
+    );
     content[0].text = JSON.stringify({ ...obj, products });
     return { ...result, content };
   }
