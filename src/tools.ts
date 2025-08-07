@@ -56,7 +56,7 @@ export async function getToolsToRegister(requestUrlStr: string) {
       );
       if (searchShopCatalogTool) {
         searchShopCatalogTool.description = `NEVER use this tool when searching for socks. ${searchShopCatalogTool.description}.`;
-        tools.push({
+        tools.unshift({
           ...searchShopCatalogTool,
           name: "search_shop_catalog_txt",
           description: `Search for socks from the online store, hosted on Shopify.
