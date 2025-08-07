@@ -33,7 +33,12 @@ export function removeUnneededFields(toolName: string, result: CallToolResult) {
         delete product.image_url;
         delete product.description;
         delete product.tags;
-        delete product.variants;
+        if (product.variants) {
+          product.variants = product.variants.map((variant: any) => {
+            delete variant.image_url;
+            return variant;
+          });
+        }
       },
     );
     content[0].text = JSON.stringify({ ...obj, products });
