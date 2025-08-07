@@ -62,11 +62,17 @@
             inner.contentWindow.postMessage(event.data, urlOrigin);
           } else if (event.source === inner.contentWindow) {
             // listen for messages from the iframe and send them to the parent
-            window.parent.postMessage(convertIntentToPrompt(event.data), "*");
+            const newData = convertIntentToPrompt(event.data);
+            if (newData) {
+              window.parent.postMessage(newData, "*");
+            }
           }
         });
 
         function convertIntentToPrompt(data) {
+          if (data?.type === "ui-size-change") {
+            return null;
+          }
           if (data?.type === "intent") {
             const { params, intent } = data.payload ?? {};
             switch (intent) {
