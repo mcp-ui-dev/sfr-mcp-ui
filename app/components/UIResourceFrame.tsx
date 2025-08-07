@@ -101,12 +101,12 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
         }, 1000);
       }
 
-      if (message.type === "ui-size-change" && adjustFrameSize) {
-        setHeight(message.payload.height);
-        return;
-      } else {
-        handleUiAction?.(message);
-      }
+      // if (message.type === "ui-size-change" && adjustFrameSize) {
+      //   setHeight(message.payload.height);
+      //   return;
+      // } else {
+      //   handleUiAction?.(message);
+      // }
     },
     [handleUiAction, adjustFrameSize, customCss],
   );
@@ -122,6 +122,7 @@ const UIResourceFrame: React.FC<UIResourceFrameProps> = ({
               minHeight: 0,
               ...style,
             },
+            autoResizeIframe: adjustFrameSize,
             iframeProps: iframeProps,
           }}
           onUIAction={onUiAction}
