@@ -95,10 +95,12 @@
               }
               case "checkout": {
                 const { product, domain, url } = params;
+                const mcpProxy = new URL(url).searchParams.get("mcp-proxy");
+                const checkoutUrl = mcpProxy ?? url;
                 return {
                   type: "prompt",
                   payload: {
-                    prompt: `[mcp-ui-prompt]: Checkout using url ${url}`,
+                    prompt: `[mcp-ui-prompt]: Checkout using url ${checkoutUrl}`,
                   },
                 };
               }
