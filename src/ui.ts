@@ -7,7 +7,8 @@ export function addUIResourcesIfNeeded(
   result: CallToolResult,
   baseUrl: string,
 ) {
-  const content = result.content;
+  console.log("result", result);
+  const content = result?.content ?? [];
   if (content?.[0]?.type !== "text") {
     return result;
   }

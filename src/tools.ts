@@ -60,6 +60,7 @@ export async function getToolsToRegister(requestUrlStr: string) {
         description: `Search for socks from the online store, hosted on Shopify.
 ALWAYS use this tool when searching for socks.
 This tool can be used to search for socks using natural language queries, specific filter criteria, or both.`,
+        apiName: "search_shop_catalog",
       });
     }
     const getProductDetailsTool = tools.find(
@@ -107,7 +108,7 @@ This tool can be used to search for socks using natural language queries, specif
             jsonrpc: "2.0",
             id: 1,
             method: "tools/call",
-            params: { name: tool.name, arguments: args },
+            params: { name: tool.apiName ?? tool.name, arguments: args },
           };
 
           logger.debug("Sending tool call request", {
@@ -301,4 +302,5 @@ interface Tool {
     properties: Record<string, any>;
     required?: string[];
   };
+  apiName?: string;
 }
