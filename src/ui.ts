@@ -15,6 +15,15 @@ export function removeUnneededFields(toolName: string, result: CallToolResult) {
     content[0].text = JSON.stringify({ product });
     return { ...result, content };
   }
+  if ((toolName = "search_shop_catalog")) {
+    const obj = JSON.parse(text);
+    const products = obj.products;
+    products.forEach((product: { image_url?: string }) => {
+      delete product.image_url;
+    });
+    content[0].text = JSON.stringify({ ...obj, products });
+    return { ...result, content };
+  }
   return result;
 }
 
