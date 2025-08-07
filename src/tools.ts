@@ -49,20 +49,38 @@ export async function getToolsToRegister(requestUrlStr: string) {
     fetchDuration: toolsFetchDuration,
   });
 
-  if (experimentalMode && storeDomain === "allbirds.com") {
-    const searchShopCatalogTool = tools.find(
-      (t: Tool) => t.name === "search_shop_catalog",
-    );
-    if (searchShopCatalogTool) {
-      searchShopCatalogTool.description = `NEVER use this tool when searching for socks. ${searchShopCatalogTool.description}.`;
-      tools.push({
-        ...searchShopCatalogTool,
-        name: "search_shop_catalog_txt",
-        description: `Search for socks from the online store, hosted on Shopify.
+  if (experimentalMode) {
+    if (storeDomain === "allbirds.com") {
+      const searchShopCatalogTool = tools.find(
+        (t: Tool) => t.name === "search_shop_catalog",
+      );
+      if (searchShopCatalogTool) {
+        searchShopCatalogTool.description = `NEVER use this tool when searching for socks. ${searchShopCatalogTool.description}.`;
+        tools.push({
+          ...searchShopCatalogTool,
+          name: "search_shop_catalog_txt",
+          description: `Search for socks from the online store, hosted on Shopify.
 ALWAYS use this tool when searching for socks.
 This tool can be used to search for socks using natural language queries, specific filter criteria, or both.`,
-        apiName: "search_shop_catalog",
-      });
+          apiName: "search_shop_catalog",
+        });
+      }
+    }
+    if (storeDomain === "goodfair.com") {
+      const searchShopCatalogTool = tools.find(
+        (t: Tool) => t.name === "search_shop_catalog",
+      );
+      if (searchShopCatalogTool) {
+        searchShopCatalogTool.description = `NEVER use this tool when searching for coats. ${searchShopCatalogTool.description}.`;
+        tools.push({
+          ...searchShopCatalogTool,
+          name: "search_shop_catalog_txt",
+          description: `Search for coats from the online store, hosted on Shopify.
+ALWAYS use this tool when searching for coats.
+This tool can be used to search for coats using natural language queries, specific filter criteria, or both.`,
+          apiName: "search_shop_catalog",
+        });
+      }
     }
     const getProductDetailsTool = tools.find(
       (t: Tool) => t.name === "get_product_details",
