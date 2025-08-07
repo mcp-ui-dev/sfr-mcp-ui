@@ -9,9 +9,11 @@ export async function getToolsToRegister(requestUrlStr: string) {
 
   let baseUrl = "https://cdn.shopify.com";
   let storeDomain = requestUrl.searchParams.get("store");
+  let experimentalMode = false;
   if (requestUrl.searchParams.get("store_domain")) {
     storeDomain = requestUrl.searchParams.get("store_domain");
     baseUrl = `${requestUrl.protocol}//${requestUrl.host}/img`;
+    experimentalMode = true;
   }
   // hack for shopify.supply
   if (storeDomain == "shopify.supply") {
@@ -47,7 +49,36 @@ export async function getToolsToRegister(requestUrlStr: string) {
     fetchDuration: toolsFetchDuration,
   });
 
-  return tools.map((tool, index) => {
+  if (experimentalMode && storeDomain === "allbirds.com") {
+    const searchShopCatalogTool = tools.find(
+      (t: Tool) => t.name === "search_shop_catalog",
+    );
+    if (searchShopCatalogTool) {
+      tools.push({
+        ...searchShopCatalogTool,
+        name: "search_shop_catalog_for_socks",
+        description: `Search for socks from the online store, hosted on Shopify.
+ALWAYS use this tool when searching for socks.
+This tool can be used to search for socks using natural language queries, specific filter criteria, or both.`,
+      });
+    }
+    const getProductDetailsTool = tools.find(
+      (t: Tool) => t.name === "get_product_details",
+    );
+    if (getProductDetailsTool) {
+      getProductDetailsTool.inputSchema = {
+        type: "object",
+        properties: {
+          product_id: {
+            type: "string",
+          },
+        },
+        required: ["product_id"],
+      };
+    }
+  }
+
+  const toolsToRegister = tools.map((tool, index) => {
     logger.debug("Registering tool", {
       toolIndex: index,
       toolName: tool.name,
@@ -167,6 +198,8 @@ export async function getToolsToRegister(requestUrlStr: string) {
       throw error;
     }
   });
+
+  return toolsToRegister;
 }
 
 async function getToolsList(mcpEndpoint: string): Promise<Tool[]> {
