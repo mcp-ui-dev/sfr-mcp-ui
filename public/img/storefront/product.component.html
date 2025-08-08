@@ -70,7 +70,7 @@
         });
 
         function convertIntentToPrompt(data) {
-          const { product_id: productId } = new URLSearchParams(location.search);
+          const productId = new URLSearchParams(location.search).get("product_id");
           if (data?.type === "ui-size-change") {
             return null;
           }
