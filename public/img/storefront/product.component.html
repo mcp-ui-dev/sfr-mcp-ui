@@ -70,6 +70,7 @@
         });
 
         function convertIntentToPrompt(data) {
+          const { productId } = new URLSearchParams(location.search);
           if (data?.type === "ui-size-change") {
             return null;
           }
@@ -95,7 +96,7 @@
                 return {
                   type: "prompt",
                   payload: {
-                    prompt: `[mcp-ui:view_details] please show the details of ${product} with product handle ${productHandle} from domain ${domainToUse}`,
+                    prompt: `[mcp-ui:view_details] please show the details of ${productId} with product handle ${productHandle} from domain ${domainToUse}`,
                   },
                 };
               }
