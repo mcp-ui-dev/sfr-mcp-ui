@@ -77,7 +77,7 @@
       function convertIntentAccordingToMode(data) {
         const productId = new URLSearchParams(location.search).get("product_id");
         const mode = new URLSearchParams(location.search).get("mode");
-        if (data?.type === "ui-size-change") {
+        if (data?.type === "ui-size-change" && mode === "prompt") {
           return null;
         }
         if (data?.type === "intent") {
