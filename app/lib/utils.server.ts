@@ -100,7 +100,7 @@ export async function getExampleUIs(
         .slice(0, 3)
         .map((product: { url: string; product_id: string }) => {
           const productName = product.url.split("/").pop();
-          return `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&product_handle=${productName}${modeVariant}`;
+          return `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&product_handle=${productName}&product_id=${product.product_id}${modeVariant}`;
         });
 
       const llmDescription = `This is an awesome product, which fits your needs exactly. It has great reviews, made from the best materials, and is guaranteed to be exactly what you need. A great choice!`;
