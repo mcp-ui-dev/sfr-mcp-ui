@@ -9,12 +9,18 @@ export async function getToolsToRegister(requestUrlStr: string) {
 
   let baseUrl = "https://cdn.shopify.com";
   let storeDomain = requestUrl.searchParams.get("store");
-  let experimentalMode = false;
+  let mode: "default" | "prompt" | "tool" = "default";
   if (requestUrl.searchParams.get("store_domain")) {
     storeDomain = requestUrl.searchParams.get("store_domain");
     baseUrl = `${requestUrl.protocol}//${requestUrl.host}/img`;
-    experimentalMode = true;
+    mode = "prompt";
   }
+  if (requestUrl.searchParams.get("storedomain")) {
+    storeDomain = requestUrl.searchParams.get("storedomain");
+    baseUrl = `${requestUrl.protocol}//${requestUrl.host}/img`;
+    mode = "tool";
+  }
+  const experimentalMode = mode === "prompt" || mode === "tool";
   // hack for shopify.supply
   if (storeDomain == "shopify.supply") {
     storeDomain = "checkout.shopify.supply";
@@ -50,36 +56,6 @@ export async function getToolsToRegister(requestUrlStr: string) {
   });
 
   if (experimentalMode) {
-    if (storeDomain === "allbirds.com") {
-      const searchShopCatalogTool = tools.find(
-        (t: Tool) => t.name === "search_shop_catalog",
-      );
-      if (searchShopCatalogTool) {
-        searchShopCatalogTool.description = `NEVER use this tool when searching for socks. ALWAYS use this tool when searching for shoes or shorts. Search for shoes or shirts from the online store`;
-        tools.unshift({
-          ...searchShopCatalogTool,
-          name: "search_shop_catalog_txt",
-          description: `ALWAYS use this tool when searching for socks. NEVER use this tool when searching for shoes or shirts. Search for socks from the online store`,
-          apiName: "search_shop_catalog",
-        });
-      }
-    }
-    if (storeDomain === "goodfair.com") {
-      const searchShopCatalogTool = tools.find(
-        (t: Tool) => t.name === "search_shop_catalog",
-      );
-      if (searchShopCatalogTool) {
-        searchShopCatalogTool.description = `NEVER use this tool when searching for coats. ${searchShopCatalogTool.description}.`;
-        tools.push({
-          ...searchShopCatalogTool,
-          name: "search_shop_catalog_txt",
-          description: `Search for coats from the online store, hosted on Shopify.
-ALWAYS use this tool when searching for coats.
-This tool can be used to search for coats using natural language queries, specific filter criteria, or both.`,
-          apiName: "search_shop_catalog",
-        });
-      }
-    }
     const getProductDetailsTool = tools.find(
       (t: Tool) => t.name === "get_product_details",
     );
@@ -187,6 +163,7 @@ This tool can be used to search for coats using natural language queries, specif
             tool.name,
             callToolResult,
             baseUrl,
+            mode,
           );
         } catch (error) {
           const errorDuration = Date.now() - toolCallStartTime;

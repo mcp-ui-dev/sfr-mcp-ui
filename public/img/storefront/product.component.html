@@ -1,131 +1,158 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>MCP-UI Proxy</title>
-    <style>
-      html,
-      body {
-        margin: 0;
-        height: 100vh;
-        width: 100vw;
-      }
-      body {
-        display: flex;
-        flex-direction: column;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      iframe {
-        background-color: transparent;
-        border: 0px none transparent;
-        padding: 0px;
-        overflow: hidden;
-        flex-grow: 1;
-      }
-    </style>
-  </head>
-  <body>
-    <script>
-      const searchParams = new URLSearchParams(location.search);
-      const intentsAsPrompts = searchParams.get("intentsAsPrompts") === "true";
-      searchParams.delete("intentsAsPrompts");
-      const target = `https://cdn.shopify.com/storefront/product.component?${searchParams.toString()}`;
 
-      // Validate that the URL is a valid HTTP or HTTPS URL
-      function isValidHttpUrl(string) {
-        try {
-          const url = new URL(string);
-          return url.protocol === "http:" || url.protocol === "https:";
-        } catch (error) {
-          return false;
+<head>
+  <meta charset="utf-8" />
+  <title>MCP-UI Proxy</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    iframe {
+      background-color: transparent;
+      border: 0px none transparent;
+      padding: 0px;
+      overflow: hidden;
+      flex-grow: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    const searchParams = new URLSearchParams(location.search);
+    const intentsAsPrompts = searchParams.get("intentsAsPrompts") === "true";
+    searchParams.delete("intentsAsPrompts");
+    const target = `https://cdn.shopify.com/storefront/product.component?${searchParams.toString()}`;
+
+    // Validate that the URL is a valid HTTP or HTTPS URL
+    function isValidHttpUrl(string) {
+      try {
+        const url = new URL(string);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch (error) {
+        return false;
+      }
+    }
+
+    if (!target) {
+      document.body.textContent = "Error: missing url parameter";
+    } else if (!isValidHttpUrl(target)) {
+      document.body.textContent =
+        "Error: invalid URL. Only HTTP and HTTPS URLs are allowed.";
+    } else {
+      const inner = document.createElement("iframe");
+      inner.src = target;
+      inner.style = "width:100%; height:100%; border:none;";
+      inner.sandbox = "allow-same-origin allow-scripts";
+      document.body.appendChild(inner);
+      const urlOrigin = new URL(target).origin;
+
+      window.addEventListener("message", (event) => {
+        if (event.source === window.parent) {
+          // listen for messages from the parent and send them to the iframe
+          inner.contentWindow.postMessage(event.data, urlOrigin);
+        } else if (event.source === inner.contentWindow) {
+          // listen for messages from the iframe and send them to the parent
+          const newData = convertIntentAccordingToMode(event.data);
+          if (newData) {
+            window.parent.postMessage(newData, "*");
+          }
         }
-      }
+      });
 
-      if (!target) {
-        document.body.textContent = "Error: missing url parameter";
-      } else if (!isValidHttpUrl(target)) {
-        document.body.textContent =
-          "Error: invalid URL. Only HTTP and HTTPS URLs are allowed.";
-      } else {
-        const inner = document.createElement("iframe");
-        inner.src = target;
-        inner.style = "width:100%; height:100%; border:none;";
-        inner.sandbox = "allow-same-origin allow-scripts";
-        document.body.appendChild(inner);
-        const urlOrigin = new URL(target).origin;
-
-        window.addEventListener("message", (event) => {
-          if (event.source === window.parent) {
-            // listen for messages from the parent and send them to the iframe
-            inner.contentWindow.postMessage(event.data, urlOrigin);
-          } else if (event.source === inner.contentWindow) {
-            // listen for messages from the iframe and send them to the parent
-            const newData = convertIntentToPrompt(event.data);
-            if (newData) {
-              window.parent.postMessage(newData, "*");
-            }
-          }
-        });
-
-        function convertIntentToPrompt(data) {
-          const productId = new URLSearchParams(location.search).get("product_id");
-          if (data?.type === "ui-size-change") {
-            return null;
-          }
-          if (data?.type === "intent") {
-            const { params, intent } = data.payload ?? {};
-            switch (intent) {
-              case "add_to_cart": {
-                const { product, domain, quantity, productHandle } = params;
+      function convertIntentAccordingToMode(data) {
+        const productId = new URLSearchParams(location.search).get("product_id");
+        const mode = new URLSearchParams(location.search).get("mode");
+        if (data?.type === "ui-size-change") {
+          return null;
+        }
+        if (data?.type === "intent") {
+          const { params, intent } = data.payload ?? {};
+          switch (intent) {
+            case "add_to_cart": {
+              const { product, domain, quantity, productHandle } = params;
+              if (mode === "prompt") {
                 return {
                   type: "prompt",
                   payload: {
                     prompt: `[mcp-ui:add_to_cart] please add ${product} with product handle ${productHandle} to cart with quantity ${quantity ?? 1} from ${domain}`,
                   },
                 };
+              } else if (mode === "tool") {
+                return {
+                  type: "tool",
+                  payload: {
+                    toolName: "update_cart",
+                    params: { add_items: [{ product_variant_id: product, quantity: quantity ?? 1 }] },
+                  },
+                };
+              };
+            }
+            case "view_details": {
+              const { product, domain, productHandle } = params;
+              let domainToUse = domain;
+              if (domainToUse.startsWith("https://")) {
+                const url = new URL(domainToUse);
+                domainToUse = url.hostname;
               }
-              case "view_details": {
-                const { product, domain, productHandle } = params;
-                let domainToUse = domain;
-                if (domainToUse.startsWith("https://")) {
-                  const url = new URL(domainToUse);
-                  domainToUse = url.hostname;
-                }
+              if (mode === "prompt") {
                 return {
                   type: "prompt",
                   payload: {
                     prompt: `[mcp-ui:view_details] use 'get_product_details' tool to show the details of product id ${productId} with product handle ${productHandle} from domain ${domainToUse}`,
                   },
                 };
-              }
-              case "checkout": {
-                const { product, domain, url } = params;
-                const mcpProxy = new URL(url).searchParams.get("mcp-proxy");
-                const checkoutUrl = mcpProxy ?? url;
+              } else if (mode === "tool") {
                 return {
-                  type: "prompt",
+                  type: "tool",
                   payload: {
-                    prompt: `[mcp-ui-prompt]: Checkout using url ${checkoutUrl}`,
-                  },
-                };
-              }
-              case "link": {
-                const { url } = params;
-                return {
-                  type: "prompt",
-                  payload: {
-                    prompt: `[mcp-ui-prompt]: Please open the url ${url} in a new tab`,
+                    toolName: "get_product_details",
+                    params: { product_id: productId },
                   },
                 };
               }
             }
-          } else {
-            return data;
+            case "checkout": {
+              const { product, domain, url } = params;
+              const mcpProxy = new URL(url).searchParams.get("mcp-proxy");
+              const checkoutUrl = mcpProxy ?? url;
+              return {
+                type: "prompt",
+                payload: {
+                  prompt: `[mcp-ui-prompt]: Checkout using url ${checkoutUrl}`,
+                },
+              };
+            }
+            case "link": {
+              const { url } = params;
+              return {
+                type: "prompt",
+                payload: {
+                  prompt: `[mcp-ui-prompt]: Please open the url ${url} in a new tab`,
+                },
+              };
+            }
           }
+        } else {
+          return data;
         }
       }
-    </script>
-  </body>
+    }
+  </script>
+</body>
+
 </html>

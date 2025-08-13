@@ -80,6 +80,7 @@ export async function getExampleUIs(
   storeDomain: string,
   tools: McpToolsResponse["result"]["tools"],
   baseUrl: string,
+  mode: "default" | "prompt" | "tool",
 ) {
   const exampleUIs: Record<string, string[]> = {};
   const postfix = baseUrl.includes("cdn.shopify.com")
@@ -89,6 +90,9 @@ export async function getExampleUIs(
     tools.length > 0 &&
     tools.some((tool) => tool.name === "search_shop_catalog")
   ) {
+    const modeVariant = ["prompt", "tool"].includes(mode)
+      ? `&mode=${mode}`
+      : "";
     const rawProducts = await fetchProductWithRetry(storeDomain, 6, 3);
     if (rawProducts.length > 0) {
       const products = fillMissingProducts(rawProducts);
@@ -96,12 +100,12 @@ export async function getExampleUIs(
         .slice(0, 3)
         .map((product: { url: string; product_id: string }) => {
           const productName = product.url.split("/").pop();
-          return `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&product_handle=${productName}`;
+          return `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&product_handle=${productName}${modeVariant}`;
         });
 
       const llmDescription = `This is an awesome product, which fits your needs exactly. It has great reviews, made from the best materials, and is guaranteed to be exactly what you need. A great choice!`;
       exampleUIs.get_product_details = [
-        `${baseUrl}/storefront/product-details.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${products[3].url.split("/").pop()}&llm_description=${btoa(llmDescription)}`,
+        `${baseUrl}/storefront/product-details.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${products[3].url.split("/").pop()}&llm_description=${btoa(llmDescription)}${modeVariant}`,
       ];
 
       const availableVariants = chooseAvailableVariants(products);
@@ -127,7 +131,7 @@ export async function getExampleUIs(
                 cartId: cartId,
               },
             ]),
-          )}`,
+          )}${modeVariant}`,
         ];
         exampleUIs.get_cart = [
           `${baseUrl}/storefront/universal-cart.${postfix}?carts=${encodeURIComponent(
@@ -137,7 +141,7 @@ export async function getExampleUIs(
                 cartId: cartId,
               },
             ]),
-          )}`,
+          )}${modeVariant}`,
         ];
       }
     }

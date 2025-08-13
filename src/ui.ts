@@ -52,6 +52,7 @@ export function addUIResourcesIfNeeded(
   toolName: string,
   result: CallToolResult,
   baseUrl: string,
+  mode: "default" | "prompt" | "tool",
 ) {
   console.log("result", result);
   const content = result?.content ?? [];
@@ -61,6 +62,7 @@ export function addUIResourcesIfNeeded(
   const postfix = baseUrl.includes("cdn.shopify.com")
     ? "component"
     : "component.html";
+  const modeVariant = ["prompt", "tool"].includes(mode) ? `&mode=${mode}` : "";
   const text = content[0].text;
   switch (toolName) {
     case "search_shop_catalog":
@@ -72,7 +74,7 @@ export function addUIResourcesIfNeeded(
             uri: `ui://product/${product.product_id}`,
             content: {
               type: "externalUrl",
-              iframeUrl: `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&product_handle=${productName}&product_id=${product.product_id}`,
+              iframeUrl: `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&product_handle=${productName}&product_id=${product.product_id}${modeVariant}`,
             },
             delivery: "text",
           });
@@ -90,7 +92,7 @@ export function addUIResourcesIfNeeded(
           uri: `ui://product/${product.product_id}`,
           content: {
             type: "externalUrl",
-            iframeUrl: `${baseUrl}/storefront/product-details.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${productName}`,
+            iframeUrl: `${baseUrl}/storefront/product-details.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${productName}${modeVariant}`,
           },
           delivery: "text",
         }),
@@ -114,7 +116,7 @@ export function addUIResourcesIfNeeded(
                   cartId: cartId,
                 },
               ]),
-            )}`,
+            )}${modeVariant}`,
           },
           delivery: "text",
         }),
