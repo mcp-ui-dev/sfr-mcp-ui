@@ -58,6 +58,24 @@
       inner.src = target;
       inner.style = "width:100%; height:100%; border:none;";
       inner.sandbox = "allow-same-origin allow-scripts";
+      const mode = new URLSearchParams(location.search).get("mode");
+      if (mode === "tool") {
+        inner.onload = () => {
+          inner.contentWindow.postMessage({
+            type: "ui-lifecycle-iframe-render-data",
+            payload: {
+              renderData: {
+                customCss: `
+              html, body {
+                height: 400px;
+                background-color: red;
+              }
+              `
+              },
+            },
+          }, "*");
+        };
+      }
       document.body.appendChild(inner);
       const urlOrigin = new URL(target).origin;
 
