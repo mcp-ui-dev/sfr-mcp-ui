@@ -36,7 +36,7 @@
     const searchParams = new URLSearchParams(location.search);
     const intentsAsPrompts = searchParams.get("intentsAsPrompts") === "true";
     searchParams.delete("intentsAsPrompts");
-    const target = `https://cdn.shopify.com/storefront/product.component?${searchParams.toString()}`;
+    const target = `https://cdn.shopify.com/storefront/product-summary.component?${searchParams.toString()}`;
 
     // Validate that the URL is a valid HTTP or HTTPS URL
     function isValidHttpUrl(string) {

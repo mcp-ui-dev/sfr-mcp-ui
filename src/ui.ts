@@ -92,7 +92,7 @@ export function addUIResourcesIfNeeded(
           uri: `ui://product/${product.product_id}`,
           content: {
             type: "externalUrl",
-            iframeUrl: `${baseUrl}/storefront/product-details.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${productName}${modeVariant}`,
+            iframeUrl: `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${productName}${modeVariant}`,
           },
           delivery: "text",
         }),
