@@ -105,7 +105,7 @@ export async function getExampleUIs(
 
       const llmDescription = `This is an awesome product, which fits your needs exactly. It has great reviews, made from the best materials, and is guaranteed to be exactly what you need. A great choice!`;
       exampleUIs.get_product_details = [
-        `${baseUrl}/storefront/product-details.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${products[3].url.split("/").pop()}&llm_description=${btoa(llmDescription)}${modeVariant}`,
+        `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${products[3].url.split("/").pop()}&llm_description=${btoa(llmDescription)}${modeVariant}`,
       ];
 
       const availableVariants = chooseAvailableVariants(products);
