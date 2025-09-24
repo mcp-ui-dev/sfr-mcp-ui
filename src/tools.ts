@@ -3,7 +3,9 @@ import { logger } from "./utils/logger";
 import { addUIResourcesIfNeeded, removeUnneededFields } from "./ui";
 import { JsonSchemaToZodRawSchema } from "./utils/schema";
 import type { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getActionMode } from "./utils/ui-urls";
+import { getActionMode, toStoreDomain } from "./utils/ui-urls";
+
+const DEFAULT_STORE_FOR_FETCHING_TOOLS_LIST = "allbirds.com";
 
 export async function getToolsToRegister(requestUrlStr: string): Promise<
   {
@@ -15,17 +17,19 @@ export async function getToolsToRegister(requestUrlStr: string): Promise<
 > {
   const requestUrl = new URL(requestUrlStr);
 
-  let storeDomain = requestUrl.searchParams.get("store");
+  let storeDomain: string | null = toStoreDomain(
+    requestUrl.searchParams.get("store"),
+  );
   let actionsMode: "default" | "prompt" | "tool" = "default";
   let proxyMode: boolean = false;
 
   if (requestUrl.searchParams.get("store_domain")) {
-    storeDomain = requestUrl.searchParams.get("store_domain");
+    storeDomain = toStoreDomain(requestUrl.searchParams.get("store_domain"));
     proxyMode = true;
     actionsMode = "prompt";
   }
   if (requestUrl.searchParams.get("storedomain")) {
-    storeDomain = requestUrl.searchParams.get("storedomain");
+    storeDomain = toStoreDomain(requestUrl.searchParams.get("storedomain"));
     proxyMode = true;
     actionsMode = "tool";
   }
@@ -44,23 +48,21 @@ export async function getToolsToRegister(requestUrlStr: string): Promise<
     allParams: Array.from(requestUrl.searchParams.entries()),
   });
 
-  if (!storeDomain) {
-    logger.error("Store domain parameter is missing", {
-      availableParams: Array.from(requestUrl.searchParams.keys()),
-      url: requestUrlStr,
-    });
-    throw new Error("Store domain is required");
-  }
+  let mcpEndpointForFetchingToolsList;
 
-  const mcpEndpoint = `https://${storeDomain}/api/mcp`;
+  if (!storeDomain) {
+    mcpEndpointForFetchingToolsList = `https://${DEFAULT_STORE_FOR_FETCHING_TOOLS_LIST}/api/mcp`;
+  } else {
+    mcpEndpointForFetchingToolsList = `https://${storeDomain}/api/mcp`;
+  }
 
   const toolsStartTime = Date.now();
   logger.debug("Starting tools list fetch", {
-    mcpEndpoint,
+    mcpEndpointForFetchingToolsList,
     fetchStartTime: toolsStartTime,
   });
 
-  const tools = await getToolsList(mcpEndpoint);
+  const tools = await getToolsList(mcpEndpointForFetchingToolsList);
   const toolsFetchDuration = Date.now() - toolsStartTime;
 
   logger.info("Successfully fetched tools list", {
@@ -94,6 +96,29 @@ export async function getToolsToRegister(requestUrlStr: string): Promise<
     });
 
     try {
+      if (!storeDomain) {
+        logger.debug(
+          "Store domain is not provided, adding storeDomain as a required property",
+          {
+            toolName: tool.name,
+          },
+        );
+        tool.inputSchema = tool.inputSchema || {
+          type: "object",
+          properties: {},
+          required: [],
+        };
+        tool.inputSchema.required = [
+          ...(tool.inputSchema.required || []),
+          "storeDomain",
+        ];
+        tool.inputSchema.properties.storeDomain = {
+          type: "string",
+          description:
+            "The domain of the store to use for the tool. You can call the verify_store_domain tool to verify the store domain.",
+        };
+      }
+
       const schema = JsonSchemaToZodRawSchema(tool.inputSchema);
       logger.debug("Converted JSON schema to Zod schema", {
         toolName: tool.name,
@@ -118,13 +143,24 @@ export async function getToolsToRegister(requestUrlStr: string): Promise<
             params: { name: tool.apiName ?? tool.name, arguments: args },
           };
 
+          const storeDomainToUse =
+            storeDomain ?? toStoreDomain(args.storeDomain as unknown as string);
+          if (!storeDomainToUse) {
+            logger.error("Store domain is not provided", {
+              toolName: tool.name,
+            });
+            throw new Error("Store domain is required");
+          }
+
+          const toolCallMcpEndpoint = `https://${storeDomainToUse}/api/mcp`;
+
           logger.debug("Sending tool call request", {
             toolName: tool.name,
-            mcpEndpoint,
+            mcpEndpoint: toolCallMcpEndpoint,
             requestBody,
           });
 
-          const result = await fetch(mcpEndpoint, {
+          const result = await fetch(toolCallMcpEndpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -173,7 +209,7 @@ export async function getToolsToRegister(requestUrlStr: string): Promise<
           }
 
           return addUIResourcesIfNeeded(
-            storeDomain,
+            storeDomainToUse,
             tool.name,
             callToolResult,
             proxyMode,
@@ -220,6 +256,42 @@ export async function getToolsToRegister(requestUrlStr: string): Promise<
       throw error;
     }
   });
+
+  // add verify_store_domain tool
+  if (!storeDomain) {
+    const schema = JsonSchemaToZodRawSchema({
+      type: "object",
+      properties: {
+        storeDomain: { type: "string" },
+      },
+      required: ["storeDomain"],
+    });
+    toolsToRegister.push({
+      toolName: "verify_store_domain",
+      toolDescription:
+        "Verify the store domain. You can call this tool to verify that a store domain is valid.",
+      toolSchema: schema,
+      toolCallback: async (args: typeof schema) => {
+        const storeDomainToVerify = toStoreDomain(
+          args.storeDomain as unknown as string,
+        );
+        const tools = await getToolsList(
+          `https://${storeDomainToVerify}/api/mcp`,
+        );
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                tools.length > 0
+                  ? `Store domain is valid: ${storeDomainToVerify}`
+                  : "Store domain is not valid",
+            },
+          ],
+        };
+      },
+    });
+  }
 
   return toolsToRegister;
 }

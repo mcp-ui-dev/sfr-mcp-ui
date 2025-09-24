@@ -104,3 +104,22 @@ export function getActionMode(actionsMode?: string | null): ActionMode {
 }
 
 export type ActionMode = "default" | "prompt" | "tool";
+
+export function toStoreDomain(storeDomain: string | null): string | null {
+  if (!storeDomain) {
+    return null;
+  }
+  let storeDomainToCheck;
+  if (!storeDomain.includes(".")) {
+    storeDomainToCheck = `https://${storeDomain}.com`;
+  } else if (storeDomain.startsWith("http")) {
+    storeDomainToCheck = storeDomain;
+  } else {
+    storeDomainToCheck = `https://${storeDomain}`;
+  }
+  const hostname = new URL(storeDomainToCheck).hostname?.toLowerCase();
+  if (hostname == "shopify.supply") {
+    return "checkout.shopify.supply";
+  }
+  return hostname;
+}
