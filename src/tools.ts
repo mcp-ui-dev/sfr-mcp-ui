@@ -3,24 +3,38 @@ import { logger } from "./utils/logger";
 import { addUIResourcesIfNeeded, removeUnneededFields } from "./ui";
 import { JsonSchemaToZodRawSchema } from "./utils/schema";
 import type { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { getActionMode } from "./utils/ui-urls";
 
-export async function getToolsToRegister(requestUrlStr: string) {
+export async function getToolsToRegister(requestUrlStr: string): Promise<
+  {
+    toolName: string;
+    toolDescription: string;
+    toolSchema: any;
+    toolCallback: ToolCallback<any>;
+  }[]
+> {
   const requestUrl = new URL(requestUrlStr);
 
-  let baseUrl = "https://cdn.shopify.com";
   let storeDomain = requestUrl.searchParams.get("store");
-  let mode: "default" | "prompt" | "tool" = "default";
+  let actionsMode: "default" | "prompt" | "tool" = "default";
+  let proxyMode: boolean = false;
+
   if (requestUrl.searchParams.get("store_domain")) {
     storeDomain = requestUrl.searchParams.get("store_domain");
-    baseUrl = `${requestUrl.protocol}//${requestUrl.host}/img`;
-    mode = "prompt";
+    proxyMode = true;
+    actionsMode = "prompt";
   }
   if (requestUrl.searchParams.get("storedomain")) {
     storeDomain = requestUrl.searchParams.get("storedomain");
-    baseUrl = `${requestUrl.protocol}//${requestUrl.host}/img`;
-    mode = "tool";
+    proxyMode = true;
+    actionsMode = "tool";
   }
-  const experimentalMode = mode === "prompt" || mode === "tool";
+
+  if (requestUrl.searchParams.get("mode")) {
+    actionsMode = getActionMode(requestUrl.searchParams.get("mode"));
+    proxyMode = actionsMode !== "default";
+  }
+
   // hack for shopify.supply
   if (storeDomain == "shopify.supply") {
     storeDomain = "checkout.shopify.supply";
@@ -55,7 +69,7 @@ export async function getToolsToRegister(requestUrlStr: string) {
     fetchDuration: toolsFetchDuration,
   });
 
-  if (experimentalMode) {
+  if (proxyMode) {
     const getProductDetailsTool = tools.find(
       (t: Tool) => t.name === "get_product_details",
     );
@@ -147,7 +161,7 @@ export async function getToolsToRegister(requestUrlStr: string) {
             jsonrpc: json.jsonrpc,
           });
 
-          if (experimentalMode) {
+          if (proxyMode) {
             try {
               callToolResult = removeUnneededFields(tool.name, callToolResult);
             } catch (error) {
@@ -162,8 +176,9 @@ export async function getToolsToRegister(requestUrlStr: string) {
             storeDomain,
             tool.name,
             callToolResult,
-            baseUrl,
-            mode,
+            proxyMode,
+            requestUrl,
+            actionsMode,
           );
         } catch (error) {
           const errorDuration = Date.now() - toolCallStartTime;

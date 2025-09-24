@@ -1,5 +1,10 @@
 import { createUIResource } from "@mcp-ui/server";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import {
+  generateProductDetailsUrl,
+  generateProductSummaryUrl,
+  generateUniversalCartUrl,
+} from "./utils/ui-urls";
 
 export function removeUnneededFields(toolName: string, result: CallToolResult) {
   const content = result?.content ?? [];
@@ -51,30 +56,33 @@ export function addUIResourcesIfNeeded(
   storeDomain: string,
   toolName: string,
   result: CallToolResult,
-  baseUrl: string,
-  mode: "default" | "prompt" | "tool",
+  proxyMode: boolean,
+  originalUrl: URL,
+  actionsMode: "default" | "prompt" | "tool",
 ) {
   console.log("result", result);
   const content = result?.content ?? [];
   if (content?.[0]?.type !== "text") {
     return result;
   }
-  const postfix = baseUrl.includes("cdn.shopify.com")
-    ? "component"
-    : "component.html";
-  const modeVariant = ["prompt", "tool"].includes(mode) ? `&mode=${mode}` : "";
   const text = content[0].text;
   switch (toolName) {
     case "search_shop_catalog":
       const products = JSON.parse(text).products;
       const newHtmlResourcesItems = products.map(
         (product: { url: string; product_id: string }) => {
-          const productName = product.url.split("/").pop();
           return createUIResource({
             uri: `ui://product/${product.product_id}`,
             content: {
               type: "externalUrl",
-              iframeUrl: `${baseUrl}/storefront/product-summary.${postfix}?store_domain=${storeDomain}&product_handle=${productName}&product_id=${product.product_id}${modeVariant}`,
+              iframeUrl: generateProductSummaryUrl({
+                storeDomain,
+                productName: product.url.split("/").pop(),
+                productId: product.product_id,
+                actionsMode,
+                proxyMode,
+                originalUrl,
+              }),
             },
             delivery: "text",
           });
@@ -85,14 +93,19 @@ export function addUIResourcesIfNeeded(
 
     case "get_product_details":
       const product = JSON.parse(text).product;
-      const productName = product.url.split("/").pop();
 
       content.push(
         createUIResource({
           uri: `ui://product/${product.product_id}`,
           content: {
             type: "externalUrl",
-            iframeUrl: `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${productName}${modeVariant}`,
+            iframeUrl: generateProductDetailsUrl({
+              proxyMode,
+              storeDomain,
+              productName: product.url.split("/").pop(),
+              originalUrl,
+              actionsMode,
+            }),
           },
           delivery: "text",
         }),
@@ -109,14 +122,13 @@ export function addUIResourcesIfNeeded(
           uri: `ui://cart/${cartId}`,
           content: {
             type: "externalUrl",
-            iframeUrl: `${baseUrl}/storefront/universal-cart.${postfix}?carts=${encodeURIComponent(
-              JSON.stringify([
-                {
-                  shop: storeDomain,
-                  cartId: cartId,
-                },
-              ]),
-            )}${modeVariant}`,
+            iframeUrl: generateUniversalCartUrl({
+              proxyMode,
+              originalUrl,
+              storeDomain,
+              cartId,
+              actionsMode,
+            }),
           },
           delivery: "text",
         }),

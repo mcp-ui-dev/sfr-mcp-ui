@@ -1,5 +1,10 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { McpToolsResponse } from "./utils";
+import {
+  generateProductDetailsUrl,
+  generateProductSummaryUrl,
+  generateUniversalCartUrl,
+} from "../../src/utils/ui-urls";
 
 export async function checkMcpServer(domain: string): Promise<{
   success: boolean;
@@ -76,36 +81,50 @@ export async function fetchToolResponse(
   return json.result;
 }
 
-export async function getExampleUIs(
-  storeDomain: string,
-  tools: McpToolsResponse["result"]["tools"],
-  baseUrl: string,
-  mode: "default" | "prompt" | "tool",
-) {
+export async function getExampleUIs({
+  storeDomain,
+  tools,
+  proxyMode,
+  actionsMode,
+  originalUrl,
+}: {
+  storeDomain: string;
+  tools: McpToolsResponse["result"]["tools"];
+  proxyMode: boolean;
+  actionsMode: "default" | "prompt" | "tool";
+  originalUrl: URL;
+}) {
   const exampleUIs: Record<string, string[]> = {};
-  const postfix = baseUrl.includes("cdn.shopify.com")
-    ? "component"
-    : "component.html";
   if (
     tools.length > 0 &&
     tools.some((tool) => tool.name === "search_shop_catalog")
   ) {
-    const modeVariant = ["prompt", "tool"].includes(mode)
-      ? `&mode=${mode}`
-      : "";
     const rawProducts = await fetchProductWithRetry(storeDomain, 6, 3);
     if (rawProducts.length > 0) {
       const products = fillMissingProducts(rawProducts);
       exampleUIs.search_shop_catalog = products
         .slice(0, 3)
         .map((product: { url: string; product_id: string }) => {
-          const productName = product.url.split("/").pop();
-          return `${baseUrl}/storefront/product-summary.${postfix}?store_domain=${storeDomain}&product_handle=${productName}&product_id=${product.product_id}${modeVariant}`;
+          return generateProductSummaryUrl({
+            storeDomain,
+            productName: product.url.split("/").pop(),
+            productId: product.product_id,
+            actionsMode,
+            proxyMode,
+            originalUrl,
+          });
         });
 
       const llmDescription = `This is an awesome product, which fits your needs exactly. It has great reviews, made from the best materials, and is guaranteed to be exactly what you need. A great choice!`;
       exampleUIs.get_product_details = [
-        `${baseUrl}/storefront/product.${postfix}?store_domain=${storeDomain}&inline=true&product_handle=${products[3].url.split("/").pop()}&llm_description=${btoa(llmDescription)}${modeVariant}`,
+        generateProductDetailsUrl({
+          storeDomain,
+          productName: products[3].url.split("/").pop(),
+          llmDescription,
+          actionsMode,
+          proxyMode,
+          originalUrl,
+        }),
       ];
 
       const availableVariants = chooseAvailableVariants(products);
@@ -124,24 +143,22 @@ export async function getExampleUIs(
       if (response.content?.[0]?.type === "text") {
         const cartId = JSON.parse(response.content[0].text).cart.id;
         exampleUIs.update_cart = [
-          `${baseUrl}/storefront/universal-cart.${postfix}?carts=${encodeURIComponent(
-            JSON.stringify([
-              {
-                shop: storeDomain,
-                cartId: cartId,
-              },
-            ]),
-          )}${modeVariant}`,
+          generateUniversalCartUrl({
+            storeDomain,
+            cartId,
+            actionsMode,
+            proxyMode,
+            originalUrl,
+          }),
         ];
         exampleUIs.get_cart = [
-          `${baseUrl}/storefront/universal-cart.${postfix}?carts=${encodeURIComponent(
-            JSON.stringify([
-              {
-                shop: storeDomain,
-                cartId: cartId,
-              },
-            ]),
-          )}${modeVariant}`,
+          generateUniversalCartUrl({
+            storeDomain,
+            cartId,
+            actionsMode,
+            proxyMode,
+            originalUrl,
+          }),
         ];
       }
     }
