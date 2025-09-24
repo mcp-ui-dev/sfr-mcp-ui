@@ -120,7 +120,7 @@ export async function getExampleUIs({
         generateProductDetailsUrl({
           storeDomain,
           productName: products[3].url.split("/").pop(),
-          llmDescription,
+          llmDescription: btoa(llmDescription),
           actionsMode,
           proxyMode,
           originalUrl,

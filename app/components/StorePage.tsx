@@ -13,7 +13,7 @@ import {
   Package,
   Info,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { McpToolsResponse } from "~/lib/utils";
 import { TooltipProvider } from "~/chat/components/ui/tooltip";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
@@ -21,6 +21,8 @@ import { truncateToTwoSentences } from "~/lib/utils";
 import { cn } from "~/lib/utils";
 import { ExampleUI } from "./ExampleUI";
 import { presets } from "./presets";
+import { getActionMode, type ActionMode } from "../../src/utils/ui-urls";
+import { useNavigate, useRevalidator } from "react-router";
 
 interface Tool {
   name: string;
@@ -86,22 +88,39 @@ export function StorePage({
   tools,
   exampleUIs,
   preset,
+  actionMode,
 }: {
   url: string;
   storeName: string;
   tools: McpToolsResponse["result"]["tools"];
   exampleUIs: Record<string, string[]>;
   preset: string;
+  actionMode: ActionMode;
 }) {
   const [dynamicPreset, setDynamicPreset] = useState(
     presets[preset ?? "default"] ? (preset ?? "default") : "default",
   );
+  const [dynamicActionMode, setDynamicActionMode] = useState(actionMode);
+
+  const mcpUrl = useMemo(() => {
+    const mcpServerUrl = new URL(url);
+    mcpServerUrl.searchParams.delete("style");
+    mcpServerUrl.searchParams.set("mode", dynamicActionMode);
+    if (dynamicActionMode === "default") {
+      mcpServerUrl.searchParams.delete("mode");
+    }
+    return mcpServerUrl.toString();
+  }, [dynamicPreset, dynamicActionMode]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
     url.searchParams.set("style", dynamicPreset);
+    url.searchParams.set("mode", dynamicActionMode);
+    if (dynamicActionMode === "default") {
+      url.searchParams.delete("mode");
+    }
     window.history.pushState(null, "", url.toString());
-  }, [dynamicPreset]);
+  }, [dynamicPreset, dynamicActionMode]);
 
   const storeNameToUse =
     storeName == "checkout.shopify.supply" ? "shopify.supply" : storeName;
@@ -126,7 +145,7 @@ export function StorePage({
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(mcpUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -173,7 +192,7 @@ export function StorePage({
               </h2>
               <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-300 mb-4">
                 <code className="text-lg font-mono text-blue-600 break-all">
-                  {url}
+                  {mcpUrl}
                 </code>
               </div>
               <Button
@@ -216,6 +235,39 @@ export function StorePage({
                 will show a toast. These messages are intended to be caught by
                 the agent.
               </p>
+              <div className="flex items-center space-x-2 mb-4">
+                <p className="text-sm font-medium text-gray-700">
+                  Action Mode:
+                </p>
+                <Button
+                  variant={
+                    dynamicActionMode === "default" ? "outline" : "default"
+                  }
+                  size="sm"
+                  onClick={() => setDynamicActionMode("default")}
+                  className="bg-white hover:bg-gray-100 cursor-pointer"
+                >
+                  Default
+                </Button>
+                <Button
+                  variant={
+                    dynamicActionMode === "prompt" ? "outline" : "default"
+                  }
+                  size="sm"
+                  onClick={() => setDynamicActionMode("prompt")}
+                  className="bg-white hover:bg-gray-100 cursor-pointer"
+                >
+                  Prompt
+                </Button>
+                <Button
+                  variant={dynamicActionMode === "tool" ? "outline" : "default"}
+                  size="sm"
+                  onClick={() => setDynamicActionMode("tool")}
+                  className="bg-white hover:bg-gray-100 cursor-pointer"
+                >
+                  Tool
+                </Button>
+              </div>
               <div className="flex items-center space-x-2 mb-4">
                 <p className="text-sm font-medium text-gray-700">UI Style:</p>
                 <Button

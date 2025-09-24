@@ -55,7 +55,14 @@ export const loader = async ({ request }: { request: Request }) => {
       url.searchParams.delete(key);
     }
   });
-  return { url: url.toString(), storeName, tools, exampleUIs, style };
+  return {
+    url: url.toString(),
+    storeName,
+    tools,
+    exampleUIs,
+    style,
+    actionsMode,
+  };
 };
 
 export default function Home({
@@ -63,7 +70,7 @@ export default function Home({
 }: {
   loaderData: Awaited<ReturnType<typeof loader>>;
 }) {
-  const { storeName, url, tools, exampleUIs, style } = loaderData;
+  const { storeName, url, tools, exampleUIs, style, actionsMode } = loaderData;
   return storeName ? (
     <StorePage
       url={url}
@@ -71,6 +78,7 @@ export default function Home({
       tools={tools}
       exampleUIs={exampleUIs}
       preset={style}
+      actionMode={actionsMode}
     />
   ) : (
     <HomePage />
