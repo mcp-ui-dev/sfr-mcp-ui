@@ -22,7 +22,7 @@ import { cn } from "~/lib/utils";
 import { ExampleUI } from "./ExampleUI";
 import { presets } from "./presets";
 import { getActionMode, type ActionMode } from "../../src/utils/ui-urls";
-import { useNavigate, useRevalidator } from "react-router";
+import { useFetcher, useNavigate } from "react-router";
 
 interface Tool {
   name: string;
@@ -97,6 +97,7 @@ export function StorePage({
   preset: string;
   actionMode: ActionMode;
 }) {
+  const navigate = useNavigate();
   const [dynamicPreset, setDynamicPreset] = useState(
     presets[preset ?? "default"] ? (preset ?? "default") : "default",
   );
@@ -120,6 +121,10 @@ export function StorePage({
       url.searchParams.delete("mode");
     }
     window.history.pushState(null, "", url.toString());
+    // navigate only if action mode is changed
+    if (dynamicActionMode !== actionMode) {
+      navigate(`${url.pathname}${url.search}${url.hash}`);
+    }
   }, [dynamicPreset, dynamicActionMode]);
 
   const storeNameToUse =
