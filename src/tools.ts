@@ -53,7 +53,7 @@ export async function getToolsToRegister(requestUrlStr: string): Promise<
   if (!storeDomain) {
     mcpEndpointForFetchingToolsList = `https://${DEFAULT_STORE_FOR_FETCHING_TOOLS_LIST}/api/mcp`;
   } else {
-    mcpEndpointForFetchingToolsList = `https://${storeDomain.replace(".com",""}/api/mcp`;
+    mcpEndpointForFetchingToolsList = `https://${storeDomain.replace(".com","")}/api/mcp`;
   }
 
   const toolsStartTime = Date.now();
@@ -152,7 +152,7 @@ export async function getToolsToRegister(requestUrlStr: string): Promise<
             throw new Error("Store domain is required");
           }
 
-          const toolCallMcpEndpoint = `https://${storeDomainToUse}/api/mcp`;
+          const toolCallMcpEndpoint = `https://${storeDomainToUse.replace(".com","")}/api/mcp`;
 
           logger.debug("Sending tool call request", {
             toolName: tool.name,
@@ -276,7 +276,7 @@ export async function getToolsToRegister(requestUrlStr: string): Promise<
           args.storeDomain as unknown as string,
         );
         const tools = await getToolsList(
-          `https://${storeDomainToVerify}/api/mcp`,
+          `https://${storeDomainToVerify.replace(".com","")}/api/mcp`,
         );
         return {
           content: [
