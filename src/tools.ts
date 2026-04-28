@@ -5,7 +5,7 @@ import { JsonSchemaToZodRawSchema } from "./utils/schema";
 import type { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getActionMode, toStoreDomain } from "./utils/ui-urls";
 
-const DEFAULT_STORE_FOR_FETCHING_TOOLS_LIST = "allbirds.com";
+const DEFAULT_STORE_FOR_FETCHING_TOOLS_LIST = "allbirds";
 
 export async function getToolsToRegister(requestUrlStr: string): Promise<
   {
@@ -53,7 +53,7 @@ export async function getToolsToRegister(requestUrlStr: string): Promise<
   if (!storeDomain) {
     mcpEndpointForFetchingToolsList = `https://${DEFAULT_STORE_FOR_FETCHING_TOOLS_LIST}/api/mcp`;
   } else {
-    mcpEndpointForFetchingToolsList = `https://${storeDomain}/api/mcp`;
+    mcpEndpointForFetchingToolsList = `https://${storeDomain.replace(".com",""}/api/mcp`;
   }
 
   const toolsStartTime = Date.now();
